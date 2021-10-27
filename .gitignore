@@ -1,0 +1,26 @@
+# Deny everything by default
+*
+
+# Allow directories (directories with no tracked files don't get committed regardless)
+!**/
+
+# git related files
+!/.gitignore
+!/.gitattributes
+
+# Build files
+!/build.gradle
+!/build.gradle.kts
+!/settings.gradle
+!/settings.gradle.kts
+!/gradlew
+!/gradlew.bat
+!/gradle/wrapper/gradle-wrapper.jar
+!/gradle/wrapper/gradle-wrapper.properties
+!/.run/*.xml
+
+# Source files
+!src/**/*.java
+!src/**/*.kt
+!src/**/*.scala
+!src/**/*.groovy
