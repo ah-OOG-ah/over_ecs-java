@@ -7,10 +7,9 @@ public class Registry {
 
 	private int id;
 	private Entities entities;
-	//	private Components components;
+	private Components components;
 	private Archetypes archetypes;
-//	private SparseSet set;
-//	private Table table;
+	private Storages storages;
 //	private Bundles bundles;
 //	private SparseSet removed_components;
 
