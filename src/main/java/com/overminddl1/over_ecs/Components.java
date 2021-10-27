@@ -35,7 +35,7 @@ public class Components {
 	}
 
 	public ComponentInfo getInfo(int id) {
-		if(this.components.size() >= id) {
+		if(id >= this.components.size()) {
 			return null;
 		}
 		return this.components.get(id);
