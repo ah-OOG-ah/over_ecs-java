@@ -5,7 +5,7 @@ public class ArchetypeSwapRemoveResult {
 	public final int table_row;
 
 	public ArchetypeSwapRemoveResult(Long swapped_entity, int table_row) {
-        this.swapped_entity = swapped_entity;
-        this.table_row = table_row;
-    }
+		this.swapped_entity = swapped_entity;
+		this.table_row = table_row;
+	}
 }

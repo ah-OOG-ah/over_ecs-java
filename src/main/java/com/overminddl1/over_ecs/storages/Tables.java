@@ -12,24 +12,24 @@ public class Tables {
 
 	public Tables() {
 		this.tables = new ArrayList<Table>();
-        this.table_ids = new HashMap<Integer, Integer>();
+		this.table_ids = new HashMap<Integer, Integer>();
 
 		this.tables.add(new Table(0, 0));
-    }
+	}
 
 	public int size() {
-        return this.tables.size();
-    }
+		return this.tables.size();
+	}
 
 	public Table get(int index) {
-        return this.tables.get(index);
-    }
+		return this.tables.get(index);
+	}
 
 	public int get_id_or_insert(int[] component_ids, Components components) {
 		// Java sucks...
 		int hash = Arrays.hashCode(component_ids);
 		Integer id = this.table_ids.get(hash);
-		if(id == null) {
+		if (id == null) {
 			Table table = new Table(0, component_ids.length);
 			for (int i = 0; i < component_ids.length; i++) {
 				table.add_column(components.getInfo(component_ids[i]));
@@ -47,13 +47,13 @@ public class Tables {
 	}
 
 	public void clear() {
-        this.tables.clear();
-        this.table_ids.clear();
-    }
+		this.tables.clear();
+		this.table_ids.clear();
+	}
 
 	public void check_change_ticks(int change_tick) {
 		for (int i = 0; i < this.tables.size(); i++) {
-            this.tables.get(i).check_change_ticks(change_tick);
-        }
+			this.tables.get(i).check_change_ticks(change_tick);
+		}
 	}
 }

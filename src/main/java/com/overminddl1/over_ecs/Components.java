@@ -17,12 +17,12 @@ public class Components {
 
 	public <T> int init_component(Storages storages, Class<T> component_class) {
 		Integer index = this.indices.get(component_class);
-		if(index == null) {
+		if (index == null) {
 			this.indices.put(component_class, this.components.size());
 			index = this.components.size();
 			ComponentDescriptor descriptor = new ComponentDescriptor(component_class);
 			ComponentInfo info = new ComponentInfo(index, descriptor);
-			if(descriptor.getStorageType() == StorageType.SparseSet) {
+			if (descriptor.getStorageType() == StorageType.SparseSet) {
 				storages.sparse_sets.get_or_insert(info);
 			}
 			this.components.add(info);
@@ -35,7 +35,7 @@ public class Components {
 	}
 
 	public ComponentInfo getInfo(int id) {
-		if(id >= this.components.size()) {
+		if (id >= this.components.size()) {
 			return null;
 		}
 		return this.components.get(id);

@@ -6,6 +6,7 @@ import com.overminddl1.over_ecs.components.ComponentTicks;
 import java.util.ArrayList;
 
 public class Table {
+	public static final int EMPTY_ID = 0;
 	private SparseSet<Column> columns;
 	private ArrayList<Long> entities;
 
@@ -17,8 +18,6 @@ public class Table {
 	public Table() {
 		this(0, 0);
 	}
-
-	public static final int EMPTY_ID = 0;
 
 	public ArrayList<Long> getEntities() {
 		return entities;
@@ -42,7 +41,7 @@ public class Table {
 	}
 
 	public void move_to_and_forget_missing(int row, Table new_table, TableMoveResult table_result) {
-		assert!(row < this.size());
+		assert !(row < this.size());
 		boolean is_last = row == this.entities.size() - 1;
 		int new_row = new_table.allocate(StorageUtils.swap_remove(this.entities, row));
 		ArrayList<Column> column_values = this.columns.getValues();
@@ -51,7 +50,7 @@ public class Table {
 			Column column = column_values.get(i);
 			column.swap_remove(row, column_result);
 			Column new_column = new_table.get_column(column.component_id);
-			if(new_column != null) {
+			if (new_column != null) {
 				new_column.initialize(new_row, column_result.data, column_result.ticks);
 			}
 		}
@@ -60,27 +59,27 @@ public class Table {
 	}
 
 	public void move_to_and_drop_missing(int row, Table new_table, TableMoveResult table_result) {
-		assert!(row < this.size());
-        boolean is_last = row == this.entities.size() - 1;
-        int new_row = new_table.allocate(StorageUtils.swap_remove(this.entities, row));
-        ArrayList<Column> column_values = this.columns.getValues();
-        ColumnSwapRemoveResult column_result = new ColumnSwapRemoveResult();
-        for (int i = 0; i < column_values.size(); i++) {
-            Column column = column_values.get(i);
-            Column new_column = new_table.get_column(column.component_id);
-            if(new_column != null) {
+		assert !(row < this.size());
+		boolean is_last = row == this.entities.size() - 1;
+		int new_row = new_table.allocate(StorageUtils.swap_remove(this.entities, row));
+		ArrayList<Column> column_values = this.columns.getValues();
+		ColumnSwapRemoveResult column_result = new ColumnSwapRemoveResult();
+		for (int i = 0; i < column_values.size(); i++) {
+			Column column = column_values.get(i);
+			Column new_column = new_table.get_column(column.component_id);
+			if (new_column != null) {
 				column.swap_remove(row, column_result);
-                new_column.initialize(new_row, column_result.data, column_result.ticks);
-            } else {
+				new_column.initialize(new_row, column_result.data, column_result.ticks);
+			} else {
 				column.swap_remove(row, column_result);
 			}
-        }
+		}
 		table_result.new_row = new_row;
 		table_result.swapped_entity = is_last ? null : this.entities.get(row);
 	}
 
 	public void move_to_superset(int row, Table new_table, TableMoveResult table_result) {
-		assert!(row < this.size());
+		assert !(row < this.size());
 		boolean is_last = row == this.entities.size() - 1;
 		int new_row = new_table.allocate(StorageUtils.swap_remove(this.entities, row));
 		ArrayList<Column> column_values = this.columns.getValues();
@@ -96,20 +95,20 @@ public class Table {
 	}
 
 	public Column get_column(int component_id) {
-        return this.columns.get(component_id);
-    }
+		return this.columns.get(component_id);
+	}
 
 	public boolean has_column(int component_id) {
 		return this.columns.contains(component_id);
 	}
 
 	public void reserve(int additional) {
-        this.entities.ensureCapacity(this.entities.size() + additional);
+		this.entities.ensureCapacity(this.entities.size() + additional);
 		ArrayList<Column> column_values = this.columns.getValues();
 		for (int i = 0; i < column_values.size(); i++) {
 			column_values.get(i).reserveCapacity(additional);
 		}
-    }
+	}
 
 	public int allocate(long entity) {
 		int index = this.entities.size();
@@ -124,8 +123,8 @@ public class Table {
 	}
 
 	public int size() {
-        return this.entities.size();
-    }
+		return this.entities.size();
+	}
 
 	public void check_change_ticks(int change_tick) {
 		ArrayList<Column> column_values = this.columns.getValues();
@@ -140,9 +139,9 @@ public class Table {
 
 	public void clear() {
 		this.entities.clear();
-        ArrayList<Column> column_values = this.columns.getValues();
-        for (int i = 0; i < column_values.size(); i++) {
-            column_values.get(i).clear();
-        }
+		ArrayList<Column> column_values = this.columns.getValues();
+		for (int i = 0; i < column_values.size(); i++) {
+			column_values.get(i).clear();
+		}
 	}
 }

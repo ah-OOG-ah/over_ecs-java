@@ -3,8 +3,6 @@ package com.overminddl1.over_ecs.components;
 import com.overminddl1.over_ecs.Component;
 import com.overminddl1.over_ecs.StorageType;
 
-import java.util.Locale;
-
 public class ComponentDescriptor {
 	private final String name;
 	private final StorageType storage_type;
@@ -16,9 +14,9 @@ public class ComponentDescriptor {
 		this.name = component_class.getName();
 		@SuppressWarnings("unchecked")
 		Component annot = (Component) component_class.getAnnotation(Component.class);
-		if(annot == null || annot.storageType().equalsIgnoreCase("table")) {
+		if (annot == null || annot.storageType().equalsIgnoreCase("table")) {
 			this.storage_type = StorageType.Table;
-		} else if(annot.storageType().equalsIgnoreCase("sparseset")) {
+		} else if (annot.storageType().equalsIgnoreCase("sparseset")) {
 			this.storage_type = StorageType.SparseSet;
 		} else {
 			throw new RuntimeException("Invalid storage type: " + annot.storageType());
@@ -35,16 +33,16 @@ public class ComponentDescriptor {
 	}
 
 	public String getName() {
-        return this.name;
-    }
+		return this.name;
+	}
 
 	public StorageType getStorageType() {
-        return this.storage_type;
-    }
+		return this.storage_type;
+	}
 
 	public boolean isMultiThreadSafe() {
-        return this.is_multi_thread_safe;
-    }
+		return this.is_multi_thread_safe;
+	}
 
 	public Class getCls() {
 		return this.component_class;

@@ -17,10 +17,10 @@ public class Archetype {
 	private int[] sparse_set_components;
 	private SparseSet<Column> unique_components;
 	private SparseSet<ArchetypeComponentInfo> components;
-	
+
 	public Archetype(int id, int table_id, int[] table_components, int[] sparse_set_components, int[] table_archetype_components, int[] sparse_set_archetype_components) {
-		assert(table_components.length == table_archetype_components.length);
-		assert(sparse_set_components.length == sparse_set_archetype_components.length);
+		assert (table_components.length == table_archetype_components.length);
+		assert (sparse_set_components.length == sparse_set_archetype_components.length);
 		this.id = id;
 		this.entities = new ArrayList<Long>();
 		this.edges = new Edges();
@@ -95,7 +95,7 @@ public class Archetype {
 
 	public void reserve(int additional) {
 		this.entities.ensureCapacity(this.entities.size() + additional);
-        this.table_info.entity_rows.ensureCapacity(this.table_info.entity_rows.size() + additional);
+		this.table_info.entity_rows.ensureCapacity(this.table_info.entity_rows.size() + additional);
 	}
 
 	public ArchetypeSwapRemoveResult swap_remove(int index) {
@@ -105,8 +105,8 @@ public class Archetype {
 	}
 
 	public int size() {
-        return this.entities.size();
-    }
+		return this.entities.size();
+	}
 
 	public boolean contains(int component_id) {
 		return this.components.contains(component_id);
@@ -114,7 +114,7 @@ public class Archetype {
 
 	public StorageType getStorageType(int component_id) {
 		ArchetypeComponentInfo info = this.components.get(component_id);
-		if(info == null) {
+		if (info == null) {
 			return null;
 		}
 		return info.storage_type;
@@ -122,14 +122,14 @@ public class Archetype {
 
 	public int getArchetypeComponentId(int component_id) {
 		ArchetypeComponentInfo info = this.components.get(component_id);
-        if(info == null) {
-            return -1;
-        }
-        return info.archetype_component_id;
+		if (info == null) {
+			return -1;
+		}
+		return info.archetype_component_id;
 	}
 
 	public void clear_entities() {
 		this.entities.clear();
-        this.table_info.entity_rows.clear();
+		this.table_info.entity_rows.clear();
 	}
 }

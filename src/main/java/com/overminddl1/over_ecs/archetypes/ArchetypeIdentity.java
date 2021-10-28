@@ -7,9 +7,9 @@ public class ArchetypeIdentity {
 	public final int[] sparse_set_components;
 
 	public ArchetypeIdentity(int[] table_components, int[] sparse_set_components) {
-        this.table_components = table_components;
-        this.sparse_set_components = sparse_set_components;
-    }
+		this.table_components = table_components;
+		this.sparse_set_components = sparse_set_components;
+	}
 
 	@Override
 	public boolean equals(Object o) {

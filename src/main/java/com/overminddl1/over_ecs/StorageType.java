@@ -5,9 +5,12 @@ public sealed interface StorageType permits StorageType.SparseSetImpl, StorageTy
 	public static final StorageType SparseSet = new StorageType.SparseSetImpl();
 
 	final class TableImpl implements StorageType {
-		private TableImpl() {}
+		private TableImpl() {
+		}
 	}
+
 	final class SparseSetImpl implements StorageType {
-		private SparseSetImpl() {}
+		private SparseSetImpl() {
+		}
 	}
 }

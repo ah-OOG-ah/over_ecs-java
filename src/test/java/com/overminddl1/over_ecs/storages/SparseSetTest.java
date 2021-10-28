@@ -23,14 +23,14 @@ class SparseSetTest {
 		assertEquals(42, set.remove(0));
 		assertEquals(1, set.size());
 		count.set(0);
-		assertEquals(42, set.get_or_insert(12, () -> { count.getAndIncrement(); return 42; }));
+		assertEquals(42, set.get_or_insert_with(12, () -> { count.getAndIncrement(); return 42; }));
 		assertEquals(1, count.get());
 		count.set(0);
-		assertEquals(42, set.get_or_insert(12, () -> { count.getAndIncrement(); return 42; }));
+		assertEquals(42, set.get_or_insert_with(12, () -> { count.getAndIncrement(); return 42; }));
 		assertEquals(0, count.get());
 		assertEquals(42, set.remove(12));
 		count.set(0);
-		assertEquals(42, set.get_or_insert(12, () -> { count.getAndIncrement(); return 42; }));
+		assertEquals(42, set.get_or_insert_with(12, () -> { count.getAndIncrement(); return 42; }));
 		assertEquals(1, count.get());
 	}
 }

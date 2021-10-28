@@ -1,6 +1,7 @@
 package com.overminddl1.over_ecs.storages;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SparseSet<T> {
@@ -29,7 +30,19 @@ public class SparseSet<T> {
 		}
 	}
 
-	public T get_or_insert(int index, Supplier<T> func) {
+	public T get_or_insert(int index, T value) {
+		Integer dense_index = this.sparse.get(index);
+		if (dense_index != null) {
+			return this.dense.get(dense_index);
+		} else {
+			this.sparse.insert(index, this.dense.size());
+			this.indices.add(index);
+			this.dense.add(value);
+			return value;
+		}
+	}
+
+	public T get_or_insert_with(int index, Supplier<T> func) {
 		Integer dense_index = this.sparse.get(index);
 		if (dense_index != null) {
 			return this.dense.get(dense_index);
@@ -38,6 +51,28 @@ public class SparseSet<T> {
 			this.sparse.insert(index, this.dense.size());
 			this.indices.add(index);
 			this.dense.add(value);
+			return value;
+		}
+	}
+
+	public T replace_with(int index, Function<T, T> func) {
+		Integer dense_index = this.sparse.get(index);
+		if (dense_index != null) {
+			T value = this.dense.get(dense_index);
+			value = func.apply(value);
+			if (value != null) {
+				this.dense.set(dense_index, value);
+			} else {
+				this.remove(index);
+			}
+			return value;
+		} else {
+			T value = func.apply(null);
+			if (value != null) {
+				this.sparse.insert(index, this.dense.size());
+				this.indices.add(index);
+				this.dense.add(value);
+			}
 			return value;
 		}
 	}

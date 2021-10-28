@@ -16,6 +16,19 @@ public class Bundles {
 		bundle_ids = new HashMap<Class, Integer>();
 	}
 
+	private static BundleInfo initialize_bundle(String type_name, int[] component_ids, int id, Components components) {
+		ArrayList<StorageType> storage_types = new ArrayList<StorageType>();
+		for (int i = 0; i < component_ids.length; i++) {
+			int component_id = component_ids[i];
+			ComponentInfo component_info = components.getInfo(component_id);
+			storage_types.add(component_info.getDescriptor().getStorageType());
+		}
+		if (storage_types.size() != storage_types.stream().distinct().count()) {
+			throw new IllegalArgumentException("Bundle " + type_name + " has duplicate storage types");
+		}
+		return new BundleInfo(id, component_ids, storage_types);
+	}
+
 	public BundleInfo get(int bundle_id) {
 		return bundle_infos.get(bundle_id);
 	}
@@ -36,18 +49,5 @@ public class Bundles {
 		} else {
 			return this.bundle_infos.get(id);
 		}
-	}
-
-	private static BundleInfo initialize_bundle(String type_name, int[] component_ids, int id, Components components) {
-		ArrayList<StorageType> storage_types = new ArrayList<StorageType>();
-		for (int i = 0; i < component_ids.length; i++) {
-			int component_id = component_ids[i];
-			ComponentInfo component_info = components.getInfo(component_id);
-			storage_types.add(component_info.getDescriptor().getStorageType());
-		}
-		if (storage_types.size() != storage_types.stream().distinct().count()) {
-			throw new IllegalArgumentException("Bundle " + type_name + " has duplicate storage types");
-		}
-		return new BundleInfo(id, component_ids, storage_types);
 	}
 }

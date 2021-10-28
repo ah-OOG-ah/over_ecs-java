@@ -6,7 +6,10 @@ import com.overminddl1.over_ecs.archetypes.Archetype;
 import com.overminddl1.over_ecs.archetypes.Edges;
 import com.overminddl1.over_ecs.components.ComponentInfo;
 import com.overminddl1.over_ecs.components.ComponentTicks;
-import com.overminddl1.over_ecs.storages.*;
+import com.overminddl1.over_ecs.storages.Column;
+import com.overminddl1.over_ecs.storages.ComponentSparseSet;
+import com.overminddl1.over_ecs.storages.SparseSets;
+import com.overminddl1.over_ecs.storages.Table;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +41,7 @@ public class BundleInfo {
 
 	public BundleInserter get_bundle_inserter(Entities entities, Archetypes archetypes, Components components, Storages storages, int archetype_id, int change_tick) {
 		int new_archetype_id = this.add_bundle_to_archetype(archetypes, storages, components, archetype_id);
-		if(new_archetype_id == archetype_id) {
+		if (new_archetype_id == archetype_id) {
 			Archetype archetype = archetypes.get(archetype_id);
 			int table_id = archetype.getTableId();
 			return new BundleInserter(archetype, entities, this, storages.tables.get(table_id), storages.sparse_sets, new InsertBundleResult(), archetypes, change_tick);
@@ -47,7 +50,7 @@ public class BundleInfo {
 			Archetype new_archetype = archetypes.get(new_archetype_id);
 			int table_id = archetype.getTableId();
 			int new_table_id = new_archetype.getTableId();
-			if(table_id == new_table_id) {
+			if (table_id == new_table_id) {
 				return new BundleInserter(archetype, entities, this, storages.tables.get(table_id), storages.sparse_sets, new InsertBundleResult(new_archetype), archetypes, change_tick);
 			} else {
 				Table table = storages.tables.get(table_id);
@@ -70,18 +73,19 @@ public class BundleInfo {
 		BundleInfo self = this;
 		bundle.get_components(new Consumer<Object>() {
 			int bundle_component = 0;
+
 			@Override
 			public void accept(Object component) {
 				int component_id = self.component_ids[bundle_component];
 				StorageType storage_type = self.storage_types.get(bundle_component);
-				if(storage_type == StorageType.Table) {
+				if (storage_type == StorageType.Table) {
 					Column column = table.get_column(component_id);
-					if(!add_bundle.bundle_status.get(bundle_component)) {
+					if (!add_bundle.bundle_status.get(bundle_component)) {
 						column.initialize(table_row, component, new ComponentTicks(change_tick));
 					} else {
 						column.replace(table_row, component, change_tick);
 					}
-				} else if(storage_type == StorageType.SparseSet) {
+				} else if (storage_type == StorageType.SparseSet) {
 					ComponentSparseSet sparse_set = sparse_sets.get(component_id);
 					sparse_set.insert(entity, component, change_tick);
 				} else {
@@ -94,7 +98,7 @@ public class BundleInfo {
 
 	public int add_bundle_to_archetype(Archetypes archetypes, Storages storages, Components components, int archetype_id) {
 		AddBundle add_bundle = archetypes.get(archetype_id).getEdges().get_add_bundle(this.getId());
-		if(add_bundle != null) {
+		if (add_bundle != null) {
 			return add_bundle.archetype_id;
 		}
 		ArrayList<Integer> new_table_components = new ArrayList<Integer>();
@@ -103,22 +107,22 @@ public class BundleInfo {
 		Archetype current_archetype = archetypes.get(archetype_id);
 		for (int i = 0; i < this.component_ids.length; i++) {
 			int component_id = this.component_ids[i];
-			if(current_archetype.contains(component_id)) {
+			if (current_archetype.contains(component_id)) {
 				bundle_status.add(true);
 			} else {
 				bundle_status.add(false);
 				ComponentInfo component_info = components.getInfo(component_id);
 				StorageType storage_type = component_info.getDescriptor().getStorageType();
-				if(storage_type == StorageType.Table) {
+				if (storage_type == StorageType.Table) {
 					new_table_components.add(component_id);
-				} else if(storage_type == StorageType.SparseSet) {
+				} else if (storage_type == StorageType.SparseSet) {
 					new_sparse_set_components.add(component_id);
 				} else {
 					throw new RuntimeException("Unknown storage type: " + storage_type);
 				}
 			}
 		}
-		if(new_table_components.size() == 0 && new_sparse_set_components.size() == 0) {
+		if (new_table_components.size() == 0 && new_sparse_set_components.size() == 0) {
 			Edges edges = current_archetype.getEdges();
 			edges.insert_add_bundle(this.id, archetype_id, bundle_status);
 			return archetype_id;

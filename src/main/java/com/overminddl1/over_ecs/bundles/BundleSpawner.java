@@ -17,14 +17,14 @@ public class BundleSpawner {
 	private int change_tick;
 
 	public BundleSpawner(Archetype archetype, Entities entities, AddBundle add_bundle, BundleInfo bundle_info, Table table, SparseSets sparse_sets, int change_tick) {
-        this.archetype = archetype;
-        this.entities = entities;
-        this.add_bundle = add_bundle;
-        this.bundle_info = bundle_info;
-        this.table = table;
-        this.sparse_sets = sparse_sets;
+		this.archetype = archetype;
+		this.entities = entities;
+		this.add_bundle = add_bundle;
+		this.bundle_info = bundle_info;
+		this.table = table;
+		this.sparse_sets = sparse_sets;
 		this.change_tick = change_tick;
-    }
+	}
 
 	public void reserve_storage(int additional) {
 		this.archetype.reserve(additional);

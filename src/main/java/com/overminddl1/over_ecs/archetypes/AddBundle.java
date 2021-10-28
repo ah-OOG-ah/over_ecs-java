@@ -7,7 +7,7 @@ public class AddBundle {
 	public ArrayList<Boolean> bundle_status; // false if added, true if mutated
 
 	public AddBundle(int archetype_id, ArrayList<Boolean> bundle_status) {
-        this.archetype_id = archetype_id;
-        this.bundle_status = bundle_status;
-    }
+		this.archetype_id = archetype_id;
+		this.bundle_status = bundle_status;
+	}
 }

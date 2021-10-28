@@ -10,10 +10,10 @@ public class Edges {
 	public SparseArray<Integer> remove_bundle_intersection;
 
 	public Edges() {
-        add_bundle = new SparseArray<AddBundle>();
-        remove_bundle = new SparseArray<Integer>();
-        remove_bundle_intersection = new SparseArray<Integer>();
-    }
+		add_bundle = new SparseArray<AddBundle>();
+		remove_bundle = new SparseArray<Integer>();
+		remove_bundle_intersection = new SparseArray<Integer>();
+	}
 
 	public AddBundle get_add_bundle(int bundle_id) {
 		return this.add_bundle.get(bundle_id);

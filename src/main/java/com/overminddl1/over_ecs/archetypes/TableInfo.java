@@ -7,7 +7,7 @@ class TableInfo {
 	ArrayList<Integer> entity_rows;
 
 	public TableInfo(int id) {
-        this.id = id;
-        entity_rows = new ArrayList<Integer>();
-    }
+		this.id = id;
+		entity_rows = new ArrayList<Integer>();
+	}
 }

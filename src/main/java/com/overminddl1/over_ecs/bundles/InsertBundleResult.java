@@ -8,15 +8,15 @@ public class InsertBundleResult {
 	public Table new_table;
 
 	public InsertBundleResult(Archetype new_archetype, Table new_table) {
-        this.new_archetype = new_archetype;
-        this.new_table = new_table;
-    }
+		this.new_archetype = new_archetype;
+		this.new_table = new_table;
+	}
 
 	public InsertBundleResult(Archetype new_archetype) {
 		this(new_archetype, null);
 	}
 
 	public InsertBundleResult() {
-        this(null, null);
-    }
+		this(null, null);
+	}
 }
