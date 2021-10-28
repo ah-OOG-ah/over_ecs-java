@@ -98,10 +98,10 @@ public class Archetype {
         this.table_info.entity_rows.ensureCapacity(this.table_info.entity_rows.size() + additional);
 	}
 
-	ArcetypeSwapRemoveResult swap_remove(int index) {
+	public ArchetypeSwapRemoveResult swap_remove(int index) {
 		boolean is_last = index == this.entities.size() - 1;
 		StorageUtils.swap_remove(this.entities, index);
-		return new ArcetypeSwapRemoveResult(is_last ? null : this.entities.get(index), StorageUtils.swap_remove(this.table_info.entity_rows, index));
+		return new ArchetypeSwapRemoveResult(is_last ? null : this.entities.get(index), StorageUtils.swap_remove(this.table_info.entity_rows, index));
 	}
 
 	public int size() {

@@ -1,5 +1,8 @@
 package com.overminddl1.over_ecs;
 
+import com.overminddl1.over_ecs.storages.SparseSet;
+
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Registry {
@@ -10,8 +13,12 @@ public class Registry {
 	private Components components;
 	private Archetypes archetypes;
 	private Storages storages;
-//	private Bundles bundles;
-//	private SparseSet removed_components;
+	private Bundles bundles;
+	private SparseSet<ArrayList<Long>> removed_components;
+//	private ArchetypeComponentAccess archetype_component_access;
+//	private MainThreadValidator main_thread_validator;
+	private AtomicInteger change_tick;
+	private int last_change_tick;
 
 	public Registry(int entityCapacity) {
 		this.id = NEXT_ID.getAndIncrement();

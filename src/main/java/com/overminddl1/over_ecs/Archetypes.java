@@ -50,7 +50,7 @@ public class Archetypes {
 		return archetypes;
 	}
 
-	int get_id_or_insert(int table_id, int[] table_components, int[] sparse_set_components) {
+	public int get_id_or_insert(int table_id, int[] table_components, int[] sparse_set_components) {
 		ArchetypeIdentity archetype_identity = new ArchetypeIdentity(table_components, sparse_set_components);
 		Integer archetype_id = this.archetype_ids.get(archetype_identity);
 		if (archetype_id != null) {

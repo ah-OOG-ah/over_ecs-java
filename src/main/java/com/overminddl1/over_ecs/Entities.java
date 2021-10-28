@@ -264,4 +264,8 @@ public class Entities {
 			location.archetype_id = EntityLocation.INVALID_ARCHETYPE_ID;
 		});
 	}
+
+	public EntityMeta getMeta(long entity) {
+		return this.meta.get(Entity.id(entity));
+	}
 }
