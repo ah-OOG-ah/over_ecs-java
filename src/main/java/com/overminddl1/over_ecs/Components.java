@@ -41,7 +41,7 @@ public class Components {
 		return this.components.get(id);
 	}
 
-	public Integer getId(Class<Object> component_class) {
+	public Integer getId(Class component_class) {
 		return this.indices.get(component_class);
 	}
 }
