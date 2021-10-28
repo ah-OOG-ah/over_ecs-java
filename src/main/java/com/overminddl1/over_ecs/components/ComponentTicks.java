@@ -21,7 +21,7 @@ public class ComponentTicks {
 		return component_delta < system_delta;
 	}
 
-	public void clamp_ticks(int change_tick) {
+	public void check_ticks(int change_tick) {
 		this.added = ComponentTicks.clamp_tick(this.added, change_tick);
 		this.changed = ComponentTicks.clamp_tick(this.changed, change_tick);
 	}

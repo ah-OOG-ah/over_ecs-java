@@ -77,7 +77,7 @@ public class Column {
 
 	public void check_change_ticks(int change_tick) {
 		for (int i = 0; i < this.ticks.size(); i++) {
-			this.ticks.get(i).clamp_ticks(change_tick);
+			this.ticks.get(i).check_ticks(change_tick);
 		}
 	}
 }
