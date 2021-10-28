@@ -16,4 +16,9 @@ public class EntityLocation {
 	public EntityLocation clone() {
 		return new EntityLocation(archetype_id, index);
 	}
+
+	public void set_empty() {
+		this.archetype_id = INVALID_ARCHETYPE_ID;
+		this.index = INVALID_INDEX;
+	}
 }

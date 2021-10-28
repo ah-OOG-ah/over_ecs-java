@@ -52,8 +52,8 @@ public class EntitiesTest {
 		assertThrows(AssertionError.class, entities::alloc);
 		assertFalse(entities.contains(0));
 		count.set(0);
-		entities.flush((entity, location) -> {
-			location.archetype_id = 0;
+		entities.flush((entity, meta) -> {
+			meta.location.archetype_id = 0;
 			count.getAndIncrement();
 		});
 		assertEquals(1, count.get());
@@ -66,8 +66,8 @@ public class EntitiesTest {
 		assertEquals(0, entities.count());
 		assertTrue(entities.contains((1L << 32) | 0));
 		count.set(0);
-		entities.flush((entity, location) -> {
-			location.archetype_id = 0;
+		entities.flush((entity, meta) -> {
+			meta.location.archetype_id = 0;
 			count.getAndIncrement();
 		});
 		assertEquals(1, count.get());
@@ -83,8 +83,8 @@ public class EntitiesTest {
 		assertEquals(0, entities.count());
 		assertFalse(entities.contains(0));
 		count.set(0);
-		entities.flush((entity, location) -> {
-			location.archetype_id = 0;
+		entities.flush((entity, meta) -> {
+			meta.location.archetype_id = 0;
 			count.getAndIncrement();
 		});
 		assertEquals(4, count.get());
@@ -100,8 +100,8 @@ public class EntitiesTest {
 		assertEquals(0, entities.count());
 		assertTrue(entities.contains((1L << 32) | 0));
 		count.set(0);
-		entities.flush((entity, location) -> {
-			location.archetype_id = 0;
+		entities.flush((entity, meta) -> {
+			meta.location.archetype_id = 0;
 			count.getAndIncrement();
 		});
 		assertEquals(4, count.get());

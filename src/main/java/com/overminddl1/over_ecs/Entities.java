@@ -1,8 +1,10 @@
 package com.overminddl1.over_ecs;
 
+import com.overminddl1.over_ecs.entities.AllocAtWithoutReplacement;
 import com.overminddl1.over_ecs.entities.EntityLocation;
 import com.overminddl1.over_ecs.entities.EntityMeta;
 import com.overminddl1.over_ecs.entities.FlushLocator;
+import com.overminddl1.over_ecs.storages.StorageUtils;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,11 +17,14 @@ public class Entities {
 	private AtomicInteger free_cursor;
 	private int size;
 
+	private AllocAtWithoutReplacement alloc_at_without_replacement;
+
 	public Entities(int capacity) {
 		this.meta = new ArrayList<>(capacity);
 		this.pending = new ArrayList<>(capacity);
 		this.free_cursor = new AtomicInteger(0);
 		this.size = 0;
+		this.alloc_at_without_replacement = new AllocAtWithoutReplacement();
 	}
 
 	public Entities() {
@@ -115,7 +120,7 @@ public class Entities {
 		return loc;
 	}
 
-	public EntityLocation alloc_at_without_replacement(long entity) {
+	public AllocAtWithoutReplacement alloc_at_without_replacement(long entity) {
 		assert !this.needs_flush();
 		int id = Entity.id(entity);
 		if (id >= this.meta.size()) {
@@ -128,26 +133,32 @@ public class Entities {
 			}
 			this.free_cursor.set(this.pending.size());
 			this.size += 1;
-			return null;
+			this.alloc_at_without_replacement.location = null;
+			this.alloc_at_without_replacement.wrong_generation_error = false;
 		} else {
-			int idx = this.pending.indexOf(id);
-			if (idx >= 0) {
-				this.pending.set(id, this.pending.remove(this.pending.size() - 1));
+			int index = this.pending.indexOf(id);
+			if (index >= 0) {
+				StorageUtils.swap_remove(this.pending, index);
 				this.free_cursor.set(this.pending.size());
 				this.size += 1;
-				return null;
+				this.alloc_at_without_replacement.location = null;
+				this.alloc_at_without_replacement.wrong_generation_error = false;
 			} else {
 				EntityMeta meta = this.meta.get(id);
 				if (meta.location.archetype_id == EntityLocation.INVALID_ARCHETYPE_ID) {
-					meta.generation = Entity.generation(entity);
-					return null;
+					this.alloc_at_without_replacement.location = null;
+					this.alloc_at_without_replacement.wrong_generation_error = false;
 				} else if (meta.generation == Entity.generation(entity)) {
-					return meta.location;
+					this.alloc_at_without_replacement.location = meta.location;
+					this.alloc_at_without_replacement.wrong_generation_error = false;
 				} else {
-					return null;
+					this.alloc_at_without_replacement.location = null;
+					this.alloc_at_without_replacement.wrong_generation_error = true;
 				}
 			}
 		}
+		this.meta.get(id).generation = Entity.generation(entity);
+		return this.alloc_at_without_replacement;
 	}
 
 	public int size() {
@@ -245,7 +256,7 @@ public class Entities {
 			for (int id = old_meta_size; id < new_meta_size; id++) {
 				EntityMeta meta = EntityMeta.EMPTY.clone();
 				this.meta.add(meta);
-				init.locate(Entity.init(meta.generation, id), meta.location);
+				init.locate(Entity.init(meta.generation, id), meta);
 			}
 			this.size += -current_free_cursor;
 			this.free_cursor.set(0);
@@ -255,13 +266,13 @@ public class Entities {
 		while (this.pending.size() > new_free_cursor) {
 			int id = this.pending.remove(this.pending.size() - 1);
 			EntityMeta meta = this.meta.get(id);
-			init.locate(Entity.init(meta.generation, id), meta.location);
+			init.locate(Entity.init(meta.generation, id), meta);
 		}
 	}
 
 	public void flush_as_invalid() {
-		this.flush((meta, location) -> {
-			location.archetype_id = EntityLocation.INVALID_ARCHETYPE_ID;
+		this.flush((entity, meta) -> {
+			meta.location.archetype_id = EntityLocation.INVALID_ARCHETYPE_ID;
 		});
 	}
 
