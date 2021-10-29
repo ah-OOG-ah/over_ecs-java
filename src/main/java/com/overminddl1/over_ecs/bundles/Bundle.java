@@ -4,4 +4,5 @@ import java.util.function.Consumer;
 
 public interface Bundle {
 	void get_components(Consumer<Object> func);
+	BundleFactory get_factory();
 }

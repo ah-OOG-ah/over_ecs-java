@@ -23,6 +23,10 @@ class BundleTest {
 		public void get_components(Consumer<Object> func) {
 			func.accept(this.components[this.i++]);
 		}
+		@Override
+		public BundleFactory get_factory() {
+			return new TestBundleFactory();
+		}
 	}
 
 	static class TestBundleFactory implements BundleFactory {

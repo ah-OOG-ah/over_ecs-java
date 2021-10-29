@@ -80,4 +80,8 @@ public class Column {
 			this.ticks.get(i).check_ticks(change_tick);
 		}
 	}
+
+	public Object get_data(int table_row) {
+		return this.data.get(table_row);
+	}
 }

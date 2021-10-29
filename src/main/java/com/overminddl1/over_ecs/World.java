@@ -70,6 +70,10 @@ public class World {
 		return bundles;
 	}
 
+	public SparseSet<ArrayList<Long>> getRemovedComponents() {
+		return removed_components;
+	}
+
 	public int init_component(Class component_class) {
         return components.init_component(this.storages, component_class);
     }
@@ -139,5 +143,13 @@ public class World {
 		this.entities.flush((entity, meta) -> {
 			meta.location = empty_archetype.allocate(entity, table.allocate(entity));
 		});
+	}
+
+	public int getChangeTick() {
+		return this.change_tick.get();
+	}
+
+	public int getLastChangeTick() {
+		return this.last_change_tick;
 	}
 }
