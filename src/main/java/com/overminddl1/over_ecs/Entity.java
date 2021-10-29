@@ -7,10 +7,8 @@ import com.overminddl1.over_ecs.components.ComponentInfo;
 import com.overminddl1.over_ecs.entities.EntityLocation;
 import com.overminddl1.over_ecs.storages.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -277,5 +275,60 @@ public final class Entity {
 		}).toArray();
     }
 
+	private static HashMap<Class, Integer> single_id_map = new HashMap<Class, Integer>();
+	private static EntitySingleBundleFactory single_bf = new EntitySingleBundleFactory();
+	private static EntitySingleBundle single_b = new EntitySingleBundle();
 
+	public <T> Entity insert(T component) {
+		Entity.single_b.component = component;
+		Entity.single_bf.component_class = component.getClass();
+		return this.insert_bundle(Entity.single_b);
+	}
+
+	public <T> void remove(Class<T> component_class) {
+		Entity.single_bf.component_class = component_class;
+		this.remove_bundle(Entity.single_bf);
+	}
+
+	// Helper private inner classess
+
+	private static final class EntitySingleBundleFactory implements BundleFactory {
+		Class component_class;
+
+		@Override
+		public void set_unique_id(Integer id) {
+			Entity.single_id_map.put(this.component_class, id);
+		}
+
+		@Override
+		public Integer get_unique_id() {
+			return Entity.single_id_map.get(this.component_class);
+		}
+
+		@Override
+		public int[] component_ids(Components components, Storages storages) {
+			return new int[] {
+				components.getId(this.component_class),
+			};
+		}
+
+		@Override
+		public Bundle from_components(Supplier<Object> func) {
+			return Entity.single_b;
+		}
+	}
+
+	private static final class EntitySingleBundle implements Bundle {
+		Object component;
+
+		@Override
+		public void get_components(Consumer<Object> func) {
+			func.accept(this.component);
+		}
+
+		@Override
+		public BundleFactory get_factory() {
+			return Entity.single_bf;
+		}
+	}
 }

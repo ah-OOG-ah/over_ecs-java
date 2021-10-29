@@ -23,6 +23,7 @@ class BundleTest {
 		public void get_components(Consumer<Object> func) {
 			func.accept(this.components[this.i++]);
 		}
+
 		@Override
 		public BundleFactory get_factory() {
 			return new TestBundleFactory();
@@ -30,9 +31,16 @@ class BundleTest {
 	}
 
 	static class TestBundleFactory implements BundleFactory {
+		Integer id = null;
+
 		@Override
-		public Class<? extends Bundle> get_bundle_class() {
-			return TestBundle.class;
+		public void set_unique_id(Integer id) {
+			this.id = id;
+		}
+
+		@Override
+		public Integer get_unique_id() {
+			return this.id;
 		}
 
 		@Override

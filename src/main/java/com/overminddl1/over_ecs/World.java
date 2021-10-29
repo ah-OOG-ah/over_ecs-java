@@ -114,7 +114,6 @@ public class World {
 	}
 
 	public <B extends Bundle> long[] spawn_batch(B[] bundles, BundleFactory bundle_factory) {
-		assert(bundles[0].getClass() == bundle_factory.get_bundle_class());
 		this.flush();
 		BundleInfo bundle_info = this.bundles.init_info(this.components, this.storages, bundle_factory);
 		this.entities.reserve(bundles.length);
