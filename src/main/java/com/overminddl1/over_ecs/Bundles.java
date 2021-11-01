@@ -6,7 +6,6 @@ import com.overminddl1.over_ecs.components.ComponentInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 public class Bundles {
 	private ArrayList<BundleInfo> bundle_infos;
@@ -44,7 +43,7 @@ public class Bundles {
 			int[] component_ids = bf.component_ids(components, storages);
 			int new_id = this.bundle_infos.size();
 			BundleInfo bundle_info = Bundles.initialize_bundle(bf.getClass().getName(), component_ids, new_id, components);
-			if(this.bundle_infos.size() > 100000) {
+			if (this.bundle_infos.size() > 100000) {
 				throw new IllegalArgumentException("Too many bundles, possible Bundle ID leak in: " + bf.getClass().getName());
 			}
 			bf.set_unique_id(this.bundle_infos.size());

@@ -8,7 +8,7 @@ public class Storages {
 	public Tables tables;
 
 	public Storages() {
-        sparse_sets = new SparseSets();
-        tables = new Tables();
-    }
+		sparse_sets = new SparseSets();
+		tables = new Tables();
+	}
 }

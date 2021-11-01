@@ -2,7 +2,7 @@ package com.overminddl1.over_ecs;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ComponentsTest {
 

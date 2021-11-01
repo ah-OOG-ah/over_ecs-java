@@ -36,6 +36,6 @@ public class Edges {
 	}
 
 	public void insert_remove_bundle_intersection(int bundle_id, Integer archetype_id) {
-        this.remove_bundle_intersection.insert(bundle_id, archetype_id);
-    }
+		this.remove_bundle_intersection.insert(bundle_id, archetype_id);
+	}
 }

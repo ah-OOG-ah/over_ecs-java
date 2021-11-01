@@ -5,7 +5,7 @@ public class AllocAtWithoutReplacement {
 	public boolean wrong_generation_error;
 
 	public AllocAtWithoutReplacement() {
-        this.location = null;
-        this.wrong_generation_error = false;
-    }
+		this.location = null;
+		this.wrong_generation_error = false;
+	}
 }

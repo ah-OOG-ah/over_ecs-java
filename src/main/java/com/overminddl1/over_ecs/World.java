@@ -47,8 +47,8 @@ public class World {
 	}
 
 	public int getId() {
-        return this.id;
-    }
+		return this.id;
+	}
 
 	public Entities getEntities() {
 		return entities;
@@ -75,8 +75,8 @@ public class World {
 	}
 
 	public int init_component(Class component_class) {
-        return components.init_component(this.storages, component_class);
-    }
+		return components.init_component(this.storages, component_class);
+	}
 
 	public Entity get_or_spawn(long entity) {
 		this.flush();
@@ -92,7 +92,7 @@ public class World {
 
 	public Entity get_entity(long entity) {
 		EntityLocation location = this.entities.get(entity);
-		if(location != null) {
+		if (location != null) {
 			return new Entity(this, entity, location);
 		} else {
 			return null;
@@ -129,7 +129,7 @@ public class World {
 
 	public <T> T get(long entity, Class<T> component_class) {
 		Entity e = this.get_entity(entity);
-		if(e == null) {
+		if (e == null) {
 			return null;
 		} else {
 			return e.get(component_class);

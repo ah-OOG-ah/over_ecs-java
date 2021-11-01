@@ -2,11 +2,9 @@ package com.overminddl1.over_ecs.storages;
 
 import com.overminddl1.over_ecs.Components;
 import com.overminddl1.over_ecs.Storages;
-import com.overminddl1.over_ecs.components.ComponentDescriptor;
-import com.overminddl1.over_ecs.components.ComponentInfo;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TableTest {
 
