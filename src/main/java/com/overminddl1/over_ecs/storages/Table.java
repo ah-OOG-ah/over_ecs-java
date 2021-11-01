@@ -79,7 +79,7 @@ public class Table {
 	}
 
 	public void move_to_superset(int row, Table new_table, TableMoveResult table_result) {
-		assert !(row < this.size());
+		assert(row < this.size());
 		boolean is_last = row == this.entities.size() - 1;
 		int new_row = new_table.allocate(StorageUtils.swap_remove(this.entities, row));
 		ArrayList<Column> column_values = this.columns.getValues();

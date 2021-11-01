@@ -5,6 +5,7 @@ import com.overminddl1.over_ecs.bundles.BundleInfo;
 import com.overminddl1.over_ecs.components.ComponentInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Bundles {
@@ -17,14 +18,14 @@ public class Bundles {
 	}
 
 	private static BundleInfo initialize_bundle(String type_name, int[] component_ids, int id, Components components) {
-		ArrayList<StorageType> storage_types = new ArrayList<StorageType>();
+		StorageType[] storage_types = new StorageType[component_ids.length];
 		for (int i = 0; i < component_ids.length; i++) {
 			int component_id = component_ids[i];
 			ComponentInfo component_info = components.getInfo(component_id);
-			storage_types.add(component_info.getDescriptor().getStorageType());
+			storage_types[i] = component_info.getDescriptor().getStorageType();
 		}
-		if (storage_types.size() != storage_types.stream().distinct().count()) {
-			throw new IllegalArgumentException("Bundle " + type_name + " has duplicate storage types");
+		if (component_ids.length != Arrays.stream(component_ids).distinct().count()) {
+			throw new IllegalArgumentException("Bundle " + type_name + " has duplicate components");
 		}
 		return new BundleInfo(id, component_ids, storage_types);
 	}

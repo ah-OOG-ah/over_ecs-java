@@ -72,7 +72,7 @@ public class BundleInserter {
 				swapped_archetype.setEntityTableRow(swapped_location.index, result.table_row);
 			}
 			AddBundle add_bundle = this.archetype.getEdges().get_add_bundle(this.bundle_info.getId());
-			this.bundle_info.write_components(this.table, this.sparse_sets, add_bundle, entity, move_result.new_row, this.change_tick, bundle);
+			this.bundle_info.write_components(new_table, this.sparse_sets, add_bundle, entity, move_result.new_row, this.change_tick, bundle);
 			return new_location;
 		}
 	}

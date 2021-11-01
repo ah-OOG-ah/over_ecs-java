@@ -18,9 +18,9 @@ import java.util.function.Consumer;
 public class BundleInfo {
 	private int id;
 	private int[] component_ids;
-	private ArrayList<StorageType> storage_types;
+	private StorageType[] storage_types;
 
-	public BundleInfo(int id, int[] component_ids, ArrayList<StorageType> storage_types) {
+	public BundleInfo(int id, int[] component_ids, StorageType[] storage_types) {
 		this.id = id;
 		this.component_ids = component_ids;
 		this.storage_types = storage_types;
@@ -35,7 +35,7 @@ public class BundleInfo {
 		return component_ids;
 	}
 
-	public ArrayList<StorageType> getStorageTypes() {
+	public StorageType[] getStorageTypes() {
 		return storage_types;
 	}
 
@@ -46,7 +46,7 @@ public class BundleInfo {
 			int table_id = archetype.getTableId();
 			return new BundleInserter(archetype, entities, this, storages.tables.get(table_id), storages.sparse_sets, new InsertBundleResult(), archetypes, change_tick);
 		} else {
-			Archetype archetype = archetypes.get(new_archetype_id);
+			Archetype archetype = archetypes.get(archetype_id);
 			Archetype new_archetype = archetypes.get(new_archetype_id);
 			int table_id = archetype.getTableId();
 			int new_table_id = new_archetype.getTableId();
@@ -77,7 +77,7 @@ public class BundleInfo {
 			@Override
 			public void accept(Object component) {
 				int component_id = self.component_ids[bundle_component];
-				StorageType storage_type = self.storage_types.get(bundle_component);
+				StorageType storage_type = self.storage_types[bundle_component];
 				if (storage_type == StorageType.Table) {
 					Column column = table.get_column(component_id);
 					if (!add_bundle.bundle_status.get(bundle_component)) {
@@ -103,7 +103,7 @@ public class BundleInfo {
 		}
 		ArrayList<Integer> new_table_components = new ArrayList<Integer>();
 		ArrayList<Integer> new_sparse_set_components = new ArrayList<Integer>();
-		ArrayList<Boolean> bundle_status = new ArrayList<Boolean>();
+		ArrayList<Boolean> bundle_status = new ArrayList<Boolean>(this.component_ids.length);
 		Archetype current_archetype = archetypes.get(archetype_id);
 		for (int i = 0; i < this.component_ids.length; i++) {
 			int component_id = this.component_ids[i];
