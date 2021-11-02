@@ -72,7 +72,7 @@ public final class Entity {
 		entities.getMeta(entity.id()).location = new_location;
 	}
 
-	private static Object take_component(Components components, Storages storages, Archetype archetype, SparseSet<ArrayList<Long>> removed_components_set, int component_id, long entity, EntityLocation location) {
+	private static Component take_component(Components components, Storages storages, Archetype archetype, SparseSet<ArrayList<Long>> removed_components_set, int component_id, long entity, EntityLocation location) {
 		ComponentInfo component_info = components.getInfo(component_id);
 		ArrayList<Long> removed_components = removed_components_set.get_or_insert_with(component_id, ArrayList::new);
 		removed_components.add(entity);
@@ -81,9 +81,9 @@ public final class Entity {
 			Table table = storages.tables.get(archetype.getTableId());
 			Column column = table.get_column(component_id);
 			int table_row = archetype.getEntityTableRow(location.index);
-			return column.get_data(table_row);
+			return (Component) column.get_data(table_row);
 		} else if (storage_type == StorageType.SparseSet) {
-			return storages.sparse_sets.get(component_id).remove(entity);
+			return (Component) storages.sparse_sets.get(component_id).remove(entity);
 		} else {
 			throw new RuntimeException("Unsupported storage type: " + storage_type);
 		}
@@ -161,7 +161,7 @@ public final class Entity {
 		return this.world.getArchetypes().get(this.location.archetype_id);
 	}
 
-	public boolean contains_component(Class component_class) {
+	public boolean contains_component(Class<? extends Component> component_class) {
 		Integer component_id = world.getComponents().getId(component_class);
 		if (component_id != null) {
 			return this.contains_component_id(component_id);
@@ -175,7 +175,7 @@ public final class Entity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T get(Class<T> component_class) {
+	public <T extends Component> T get(Class<T> component_class) {
 		Integer component_id = this.world.getComponents().getId(component_class);
 		if (component_id != null) {
 			return (T) this.get_component(component_id);
@@ -185,7 +185,7 @@ public final class Entity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T set(Class<T> component_class) {
+	public <T extends Component> T set(Class<T> component_class) {
 		Integer component_id = this.world.getComponents().getId(component_class);
 		if (component_id != null) {
 			return (T) this.set_component(component_id);
@@ -194,7 +194,7 @@ public final class Entity {
 		}
 	}
 
-	public Object get_component(int component_id) {
+	public Component get_component(int component_id) {
 		Archetype archetype = this.world.getArchetypes().get(this.location.archetype_id);
 		ComponentInfo component_info = this.world.getComponents().getInfo(component_id);
 		StorageType storage_type = component_info.getDescriptor().getStorageType();
@@ -217,7 +217,7 @@ public final class Entity {
 		}
 	}
 
-	public Object set_component(int component_id) {
+	public Component set_component(int component_id) {
 		Archetype archetype = this.world.getArchetypes().get(this.location.archetype_id);
 		ComponentInfo component_info = this.world.getComponents().getInfo(component_id);
 		StorageType storage_type = component_info.getDescriptor().getStorageType();
@@ -268,11 +268,11 @@ public final class Entity {
 		Archetype old_archetype = archetypes.get(old_location.archetype_id);
 		int[] bundle_components = bundle_info.getComponentIds();
 		Entity self = this;
-		Bundle result = bundle_factory.from_components(new Supplier<Object>() {
+		Bundle result = bundle_factory.from_components(new Supplier<Component>() {
 			int i = 0;
 
 			@Override
-			public Object get() {
+			public Component get() {
 				int component_id = bundle_components[i++];
 				return Entity.take_component(components, storages, old_archetype, removed_components, component_id, entity, old_location);
 			}
@@ -281,13 +281,13 @@ public final class Entity {
 		return result;
 	}
 
-	public <T> Entity insert(T component) {
+	public <T extends Component> Entity insert(T component) {
 		Entity.single_b.component = component;
 		Entity.single_bf.component_class = component.getClass();
 		return this.insert_bundle(Entity.single_b);
 	}
 
-	public <T> void remove(Class<T> component_class) {
+	public void remove(Class<? extends Component> component_class) {
 		Entity.single_bf.component_class = component_class;
 		this.remove_bundle(Entity.single_bf);
 	}
@@ -332,7 +332,7 @@ public final class Entity {
 	// Helper private inner classess
 
 	private static final class EntitySingleBundleFactory implements BundleFactory {
-		Class component_class;
+		Class<? extends Component> component_class;
 
 		@Override
 		public Integer get_unique_id() {
@@ -352,16 +352,16 @@ public final class Entity {
 		}
 
 		@Override
-		public Bundle from_components(Supplier<Object> func) {
+		public Bundle from_components(Supplier<Component> func) {
 			return Entity.single_b;
 		}
 	}
 
 	private static final class EntitySingleBundle implements Bundle {
-		Object component;
+		Component component;
 
 		@Override
-		public void get_components(Consumer<Object> func) {
+		public void get_components(Consumer<Component> func) {
 			func.accept(this.component);
 		}
 

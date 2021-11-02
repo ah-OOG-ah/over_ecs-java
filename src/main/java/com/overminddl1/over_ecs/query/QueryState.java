@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.function.Consumer;
 
-public class QueryState {
+public class QueryState implements Iterable<Object> {
 	ArrayList<Integer> matched_table_ids;
 	ArrayList<Integer> matched_archetype_ids;
 	FetchState fetch_state;
@@ -24,8 +24,10 @@ public class QueryState {
 	private BitSet matched_archetypes;
 	private Access archetype_component_access;
 	private FilteredAccess component_access;
+	private World world;
 
 	public QueryState(World world, WorldQuery fetch_factory, WorldFilterQuery filter_factory) {
+		this.world = world;
 		this.world_id = world.getId();
 		this.archetype_generation = 0;
 		this.matched_tables = new BitSet();
@@ -81,9 +83,17 @@ public class QueryState {
 		}
 	}
 
+	public Object get(long entity) {
+		return this.get(this.world, entity);
+	}
+
 	public Object get(World world, long entity) {
 		this.validate_world_and_update_archetypes(world);
 		return this.get_manual(world, entity, world.getLastChangeTick(), world.getChangeTick());
+	}
+
+	public Object get_manual(long entity, int last_change_tick, int change_tick) {
+		return this.get_manual(this.world, entity, last_change_tick, change_tick);
 	}
 
 	public Object get_manual(World world, long entity, int last_change_tick, int change_tick) {
@@ -95,8 +105,8 @@ public class QueryState {
 			return null;
 		}
 		Archetype archetype = world.getArchetypes().get(location.archetype_id);
-		Fetch fetch = fetch_factory.init(world, this.fetch_state, last_change_tick, change_tick);
-		FilterFetch filter = filter_factory.init(world, this.filter_state, last_change_tick, change_tick);
+		Fetch fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+		FilterFetch filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
 		fetch.set_archetype(this.fetch_state, archetype, world.getStorages().tables);
 		filter.set_archetype(this.filter_state, archetype, world.getStorages().tables);
 		if (filter.archetype_filter_fetch(location.index)) {
@@ -106,9 +116,22 @@ public class QueryState {
 		}
 	}
 
+	@Override
+	public QueryIter iterator() {
+		return this.iterate(this.world);
+	}
+
+	public void forEach(Consumer<? super Object> action) {
+		this.for_each(this.world, action);
+	}
+
 	public QueryIter iterate(World world) {
 		this.validate_world_and_update_archetypes(world);
 		return this.iterate_manual(world, world.getLastChangeTick(), world.getChangeTick());
+	}
+
+	public QueryCombinationIter iterate_combinations() {
+		return this.iterate_combinations(this.world);
 	}
 
 	public QueryCombinationIter iterate_combinations(World world) {
@@ -116,22 +139,39 @@ public class QueryState {
 		return this.iterate_combinations_manual(world, world.getLastChangeTick(), world.getChangeTick());
 	}
 
+	public QueryIter iterate_manual(int last_change_tick, int change_tick) {
+		return this.iterate_manual(this.world, last_change_tick, change_tick);
+	}
+
 	public QueryIter iterate_manual(World world, int last_change_tick, int change_tick) {
 		return new QueryIter(world, this, last_change_tick, change_tick);
+	}
+
+	public QueryCombinationIter iterate_combinations_manual(int last_change_tick, int change_tick) {
+		return this.iterate_combinations_manual(this.world, last_change_tick, change_tick);
 	}
 
 	public QueryCombinationIter iterate_combinations_manual(World world, int last_change_tick, int change_tick) {
 		return new QueryCombinationIter(world, this, last_change_tick, change_tick);
 	}
 
-	public void for_each(World world, Consumer<Object> func) {
+	public <T> void for_each(Consumer<T> func) {
+		this.for_each(this.world, func);
+	}
+
+	public <T> void for_each(World world, Consumer<T> func) {
 		this.validate_world_and_update_archetypes(world);
 		this.for_each_manual(world, func, world.getLastChangeTick(), world.getChangeTick());
 	}
 
-	public void for_each_manual(World world, Consumer<Object> func, int last_change_tick, int change_tick) {
-		Fetch fetch = fetch_factory.init(world, this.fetch_state, last_change_tick, change_tick);
-		FilterFetch filter = filter_factory.init(world, this.filter_state, last_change_tick, change_tick);
+	public <T> void for_each_manual(Consumer<T> func, int last_change_tick, int change_tick) {
+		this.for_each_manual(this.world, func, last_change_tick, change_tick);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> void for_each_manual(World world, Consumer<T> func, int last_change_tick, int change_tick) {
+		Fetch fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+		FilterFetch filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
 		if (fetch.is_dense() && filter.is_dense()) {
 			Tables tables = world.getStorages().tables;
 			for (int table_id = 0; table_id < this.matched_table_ids.size(); table_id++) {
@@ -142,7 +182,7 @@ public class QueryState {
 					if (!filter.table_filter_fetch(table_index)) {
 						continue;
 					}
-					func.accept(fetch.table_fetch(table_index));
+					func.accept((T) fetch.table_fetch(table_index));
 				}
 			}
 		} else {
@@ -156,7 +196,7 @@ public class QueryState {
 					if (!filter.archetype_filter_fetch(archetype_index)) {
 						continue;
 					}
-					func.accept(fetch.archetype_fetch(archetype_index));
+					func.accept((T) fetch.archetype_fetch(archetype_index));
 				}
 			}
 		}

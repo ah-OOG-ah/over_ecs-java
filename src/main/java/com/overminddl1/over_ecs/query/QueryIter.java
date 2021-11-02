@@ -9,7 +9,7 @@ import com.overminddl1.over_ecs.storages.Tables;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class QueryIter implements Iterator {
+public class QueryIter implements Iterator<Object> {
 	Tables tables;
 	Archetypes archetypes;
 	QueryState query_state;
@@ -24,8 +24,8 @@ public class QueryIter implements Iterator {
 	int current_index;
 
 	public QueryIter(World world, QueryState query_state, int last_change_tick, int change_tick) {
-		this.fetch = query_state.fetch_factory.init(world, query_state.fetch_state, last_change_tick, change_tick);
-		this.filter = query_state.filter_factory.init(world, query_state.filter_state, last_change_tick, change_tick);
+		this.fetch = query_state.fetch_factory.init_fetch(world, query_state.fetch_state, last_change_tick, change_tick);
+		this.filter = query_state.filter_factory.init_fetch(world, query_state.filter_state, last_change_tick, change_tick);
 		this.world = world;
 		this.query_state = query_state;
 		this.tables = world.getStorages().tables;

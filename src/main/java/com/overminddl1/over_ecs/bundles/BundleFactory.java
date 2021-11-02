@@ -1,5 +1,6 @@
 package com.overminddl1.over_ecs.bundles;
 
+import com.overminddl1.over_ecs.Component;
 import com.overminddl1.over_ecs.Components;
 import com.overminddl1.over_ecs.Storages;
 
@@ -12,5 +13,5 @@ public interface BundleFactory {
 
 	int[] component_ids(Components components, Storages storages);
 
-	Bundle from_components(Supplier<Object> func);
+	Bundle from_components(Supplier<Component> func);
 }

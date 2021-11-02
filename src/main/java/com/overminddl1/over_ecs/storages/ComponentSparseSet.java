@@ -1,5 +1,6 @@
 package com.overminddl1.over_ecs.storages;
 
+import com.overminddl1.over_ecs.Component;
 import com.overminddl1.over_ecs.Entity;
 import com.overminddl1.over_ecs.components.ComponentInfo;
 import com.overminddl1.over_ecs.components.ComponentTicks;
@@ -7,13 +8,13 @@ import com.overminddl1.over_ecs.components.ComponentTicks;
 import java.util.ArrayList;
 
 public class ComponentSparseSet {
-	private ArrayList<Object> dense;
+	private ArrayList<Component> dense;
 	private ArrayList<ComponentTicks> ticks;
 	private ArrayList<Long> entities;
 	private SparseArray<Integer> sparse;
 
 	public ComponentSparseSet(ComponentInfo _component_info, int capacity) {
-		this.dense = new ArrayList<Object>(capacity);
+		this.dense = new ArrayList<Component>(capacity);
 		this.ticks = new ArrayList<ComponentTicks>(capacity);
 		this.entities = new ArrayList<Long>(capacity);
 		this.sparse = new SparseArray<Integer>();
@@ -30,7 +31,7 @@ public class ComponentSparseSet {
 		return this.dense.size();
 	}
 
-	public void insert(long entity, Object value, int change_tick) {
+	public void insert(long entity, Component value, int change_tick) {
 		int entity_id = Entity.id(entity);
 		Integer dense_index = this.sparse.get(entity_id);
 		if (dense_index != null) {
@@ -51,7 +52,7 @@ public class ComponentSparseSet {
 		return this.sparse.contains(Entity.id(entity));
 	}
 
-	public Object get(long entity) {
+	public Component get(long entity) {
 		Integer dense_index = this.sparse.get(Entity.id(entity));
 		return dense_index != null ? this.dense.get(dense_index) : null;
 	}
@@ -61,13 +62,13 @@ public class ComponentSparseSet {
 		return dense_index != null ? this.ticks.get(dense_index) : null;
 	}
 
-	public Object remove(long entity) {
+	public Component remove(long entity) {
 		Integer dense_index = this.sparse.remove(Entity.id(entity));
 		if (dense_index != null) {
 			StorageUtils.swap_remove(this.ticks, dense_index);
 			StorageUtils.swap_remove(this.entities, dense_index);
 			boolean is_last = dense_index == this.dense.size() - 1;
-			Object value = StorageUtils.swap_remove(this.dense, dense_index);
+			Component value = StorageUtils.swap_remove(this.dense, dense_index);
 			if (!is_last) {
 				long swapped_entity = this.entities.get(dense_index);
 				this.sparse.insert(Entity.id(swapped_entity), dense_index);

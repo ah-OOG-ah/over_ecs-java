@@ -120,10 +120,10 @@ public class Archetype {
 		return info.storage_type;
 	}
 
-	public int getArchetypeComponentId(int component_id) {
+	public Integer getArchetypeComponentId(int component_id) {
 		ArchetypeComponentInfo info = this.components.get(component_id);
 		if (info == null) {
-			return -1;
+			return null;
 		}
 		return info.archetype_component_id;
 	}

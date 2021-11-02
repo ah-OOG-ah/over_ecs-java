@@ -71,11 +71,11 @@ public class BundleInfo {
 
 	public <T extends Bundle> void write_components(Table table, SparseSets sparse_sets, AddBundle add_bundle, long entity, int table_row, int change_tick, T bundle) {
 		BundleInfo self = this;
-		bundle.get_components(new Consumer<Object>() {
+		bundle.get_components(new Consumer<Component>() {
 			int bundle_component = 0;
 
 			@Override
-			public void accept(Object component) {
+			public void accept(Component component) {
 				int component_id = self.component_ids[bundle_component];
 				StorageType storage_type = self.storage_types[bundle_component];
 				if (storage_type == StorageType.Table) {

@@ -1,13 +1,7 @@
 package com.overminddl1.over_ecs;
 
-import java.lang.annotation.*;
+public interface Component {
+	Component componentClone();
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-@Documented
-public @interface Component {
-	// Valid is only "Table" or "SparseSet" at this point
-	String storageType() default "Table";
-
-	boolean isMultiThreadSafe() default true;
+	void componentReset();
 }

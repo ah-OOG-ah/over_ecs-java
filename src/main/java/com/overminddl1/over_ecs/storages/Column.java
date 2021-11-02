@@ -1,5 +1,6 @@
 package com.overminddl1.over_ecs.storages;
 
+import com.overminddl1.over_ecs.Component;
 import com.overminddl1.over_ecs.components.ComponentInfo;
 import com.overminddl1.over_ecs.components.ComponentTicks;
 
@@ -7,33 +8,33 @@ import java.util.ArrayList;
 
 public class Column {
 	public int component_id;
-	public ArrayList<Object> data;
+	public ArrayList<Component> data;
 	public ArrayList<ComponentTicks> ticks;
 
 	public Column(ComponentInfo info, int capacity) {
 		this.component_id = info.getId();
-		data = new ArrayList<Object>(capacity);
+		data = new ArrayList<Component>(capacity);
 		ticks = new ArrayList<ComponentTicks>(capacity);
 	}
 
-	public void initialize(int row, Object data, ComponentTicks ticks) {
+	public void initialize(int row, Component data, ComponentTicks ticks) {
 		assert (row < this.size());
 		this.data.set(row, data);
 		this.ticks.set(row, ticks);
 	}
 
-	public void replace(int row, Object data, int change_tick) {
+	public void replace(int row, Component data, int change_tick) {
 		assert (row < this.size());
 		this.data.set(row, data);
 		this.ticks.get(row).set_changed(change_tick);
 	}
 
-	public void initialize_data(int row, Object data) {
+	public void initialize_data(int row, Component data) {
 		assert (row < this.size());
 		this.data.set(row, data);
 	}
 
-	public void add(Object data, ComponentTicks ticks) {
+	public void add(Component data, ComponentTicks ticks) {
 		this.data.add(data);
 		this.ticks.add(ticks);
 	}

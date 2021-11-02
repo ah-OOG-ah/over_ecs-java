@@ -116,7 +116,7 @@ public class World {
 		return new StringBuilder().append("World{").append("\n\tid=").append(this.id).append(",\n\tentity_count=").append(this.entities.size()).append(",\n\tarchetype_count=").append(this.archetypes.size()).append(",\n\tcomponent_count=").append(this.components.size()).append(",\n\tresource_count=").append(this.archetypes.resource().getUniqueComponents().size()).append("\n}").toString();
 	}
 
-	public int init_component(Class component_class) {
+	public int init_component(Class<? extends Component> component_class) {
 		return components.init_component(this.storages, component_class);
 	}
 
@@ -169,7 +169,7 @@ public class World {
 		return entities;
 	}
 
-	public <T> T get_component(long entity, Class<T> component_class) {
+	public <T extends Component> T get_component(long entity, Class<T> component_class) {
 		Entity e = this.get_entity(entity);
 		if (e == null) {
 			return null;
@@ -178,7 +178,7 @@ public class World {
 		}
 	}
 
-	public <T> T set_component(long entity, Class<T> component_class) {
+	public <T extends Component> T set_component(long entity, Class<T> component_class) {
 		Entity e = this.get_entity(entity);
 		if (e == null) {
 			return null;
@@ -187,7 +187,7 @@ public class World {
 		}
 	}
 
-	public <T> void insert_component(long entity, T component) {
+	public <T extends Component> void insert_component(long entity, T component) {
 		Entity e = this.get_entity(entity);
 		if (e == null) {
 			return;
@@ -196,7 +196,7 @@ public class World {
 		}
 	}
 
-	public <T> void remove_component(long entity, Class<T> component_class) {
+	public void remove_component(long entity, Class<? extends Component> component_class) {
 		Entity e = this.get_entity(entity);
 		if (e == null) {
 			return;

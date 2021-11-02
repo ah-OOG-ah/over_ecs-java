@@ -15,7 +15,7 @@ public class Components {
 		indices = new HashMap<Class, Integer>();
 	}
 
-	public int init_component(Storages storages, Class component_class) {
+	public int init_component(Storages storages, Class<? extends Component> component_class) {
 		Integer index = this.indices.get(component_class);
 		if (index == null) {
 			this.indices.put(component_class, this.components.size());
@@ -41,7 +41,15 @@ public class Components {
 		return this.components.get(id);
 	}
 
-	public Integer getId(Class component_class) {
+	public Integer getId(Class<? extends Component> component_class) {
 		return this.indices.get(component_class);
+	}
+
+	public ComponentInfo getInfoFromClass(Class<? extends Component> component_class) {
+		Integer id = this.getId(component_class);
+		if (id == null) {
+			return null;
+		}
+		return this.getInfo(id);
 	}
 }

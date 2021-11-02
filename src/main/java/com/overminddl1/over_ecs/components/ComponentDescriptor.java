@@ -1,6 +1,7 @@
 package com.overminddl1.over_ecs.components;
 
 import com.overminddl1.over_ecs.Component;
+import com.overminddl1.over_ecs.ComponentRefinement;
 import com.overminddl1.over_ecs.StorageType;
 
 public class ComponentDescriptor {
@@ -10,10 +11,10 @@ public class ComponentDescriptor {
 	private final Class component_class;
 	// Blah stupid java, no chance of packing...
 
-	public ComponentDescriptor(Class component_class) {
+	public ComponentDescriptor(Class<? extends Component> component_class) {
 		this.name = component_class.getName();
 		@SuppressWarnings("unchecked")
-		Component annot = (Component) component_class.getAnnotation(Component.class);
+		ComponentRefinement annot = (ComponentRefinement) component_class.getAnnotation(ComponentRefinement.class);
 		if (annot == null || annot.storageType().equalsIgnoreCase("table")) {
 			this.storage_type = StorageType.Table;
 		} else if (annot.storageType().equalsIgnoreCase("sparseset")) {

@@ -1,5 +1,6 @@
 package com.overminddl1.over_ecs.query;
 
+import com.overminddl1.over_ecs.Component;
 import com.overminddl1.over_ecs.World;
 import com.overminddl1.over_ecs.archetypes.Archetype;
 import com.overminddl1.over_ecs.storages.Table;
@@ -22,12 +23,12 @@ public interface WorldFilterQuery extends WorldQuery {
 			}
 
 			@Override
-			public Object archetype_fetch(int archetype_index) {
+			public Component archetype_fetch(int archetype_index) {
 				return null;
 			}
 
 			@Override
-			public Object table_fetch(int table_row) {
+			public Component table_fetch(int table_row) {
 				return null;
 			}
 
@@ -62,7 +63,7 @@ public interface WorldFilterQuery extends WorldQuery {
 		};
 
 		@Override
-		public FilterFetch init(World world, FetchState fetch_state, int last_change_tick, int change_tick) {
+		public FilterFetch init_fetch(World world, FetchState fetch_state, int last_change_tick, int change_tick) {
 			return this.filter_fetch;
 		}
 
@@ -73,5 +74,5 @@ public interface WorldFilterQuery extends WorldQuery {
 	};
 
 	@Override
-	FilterFetch init(World world, FetchState fetch_state, int last_change_tick, int change_tick);
+	FilterFetch init_fetch(World world, FetchState fetch_state, int last_change_tick, int change_tick);
 }

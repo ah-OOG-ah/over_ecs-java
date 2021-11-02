@@ -1,5 +1,6 @@
 package com.overminddl1.over_ecs.bundles;
 
+import com.overminddl1.over_ecs.Component;
 import com.overminddl1.over_ecs.Components;
 import com.overminddl1.over_ecs.Storages;
 
@@ -8,9 +9,9 @@ import java.util.function.Supplier;
 
 public class BundleN implements Bundle {
 	private BundleNFactory factory;
-	private Object[] components;
+	private Component[] components;
 
-	public BundleN(Object... components) {
+	public BundleN(Component... components) {
 		this.components = components;
 		this.factory = new BundleNFactory(components.length);
 	}
@@ -19,7 +20,7 @@ public class BundleN implements Bundle {
 		return this.components[index];
 	}
 
-	public BundleN set(int index, Object value) {
+	public BundleN set(int index, Component value) {
 		if (value.getClass() != this.components[index].getClass()) {
 			this.factory.id = null;
 			this.factory.types = null;
@@ -28,7 +29,7 @@ public class BundleN implements Bundle {
 		return this;
 	}
 
-	public BundleN set_unchecked(int index, Object value) {
+	public BundleN set_unchecked(int index, Component value) {
 		this.components[index] = value;
 		return this;
 	}
@@ -38,7 +39,10 @@ public class BundleN implements Bundle {
 	}
 
 	@Override
-	public void get_components(Consumer<Object> func) {
+	public void get_components(Consumer<Component> func) {
+		for (int i = 0; i < this.components.length; i++) {
+			func.accept(this.components[i]);
+		}
 	}
 
 	@Override
@@ -79,8 +83,8 @@ public class BundleN implements Bundle {
 		}
 
 		@Override
-		public Bundle from_components(Supplier<Object> func) {
-			Object[] components = new Object[this.count];
+		public Bundle from_components(Supplier<Component> func) {
+			Component[] components = new Component[this.count];
 			for (int i = 0; i < this.count; i++) {
 				components[i] = func.get();
 			}
