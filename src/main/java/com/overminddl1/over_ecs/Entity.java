@@ -292,6 +292,43 @@ public final class Entity {
 		this.remove_bundle(Entity.single_bf);
 	}
 
+	public void despawn() {
+		this.world.flush();
+		EntityLocation location = this.world.getEntities().free(this.entity);
+		if (location == null) {
+			throw new RuntimeException("Entity already despawned");
+		}
+		Archetype archetype = this.world.getArchetypes().get(location.archetype_id);
+		ArrayList<Integer> values = archetype.getComponents().getIndices();
+		for (int i = 0; i < values.size(); i++) {
+			ArrayList<Long> removed_components = this.world.getRemovedComponents().get_or_insert_with(values.get(i), ArrayList::new);
+			removed_components.add(this.entity);
+		}
+		ArchetypeSwapRemoveResult remove_result = archetype.swap_remove(location.index);
+		if (remove_result.swapped_entity != null) {
+			this.world.getEntities().getMeta(remove_result.swapped_entity).location = location;
+		}
+		int table_row = remove_result.table_row;
+		int[] component_ids = archetype.getSparseSetComponents();
+		for (int i = 0; i < component_ids.length; i++) {
+			ComponentSparseSet sparse_set = this.world.getStorages().sparse_sets.get(component_ids[i]);
+			sparse_set.remove(this.entity);
+		}
+		Long moved_entity = this.world.getStorages().tables.get(archetype.getTableId()).swap_remove(table_row);
+		if (moved_entity != null) {
+			EntityLocation moved_location = this.world.getEntities().get(moved_entity);
+			this.world.getArchetypes().get(moved_location.archetype_id).setEntityTableRow(moved_location.index, table_row);
+		}
+	}
+
+	public World getWorld() {
+		return world;
+	}
+
+	public void update_location() {
+		this.location = this.world.getEntities().get(this.entity);
+	}
+
 	// Helper private inner classess
 
 	private static final class EntitySingleBundleFactory implements BundleFactory {

@@ -7,6 +7,10 @@ import com.overminddl1.over_ecs.bundles.BundleInfo;
 import com.overminddl1.over_ecs.bundles.BundleSpawner;
 import com.overminddl1.over_ecs.entities.AllocAtWithoutReplacement;
 import com.overminddl1.over_ecs.entities.EntityLocation;
+import com.overminddl1.over_ecs.query.QueryState;
+import com.overminddl1.over_ecs.query.WorldFilterQuery;
+import com.overminddl1.over_ecs.query.WorldQuery;
+import com.overminddl1.over_ecs.storages.Column;
 import com.overminddl1.over_ecs.storages.SparseSet;
 import com.overminddl1.over_ecs.storages.Table;
 import com.overminddl1.over_ecs.world.ArchetypeComponentAccess;
@@ -74,6 +78,44 @@ public class World {
 		return removed_components;
 	}
 
+	public int getChangeTick() {
+		return this.change_tick.get();
+	}
+
+	public int setChangeTick(int change_tick) {
+		return this.change_tick.getAndSet(change_tick);
+	}
+
+	public int getLastChangeTick() {
+		return this.last_change_tick;
+	}
+
+	public int incrementChangeTick() {
+		return this.change_tick.getAndIncrement();
+	}
+
+	public void check_change_ticks() {
+		int change_tick = this.getChangeTick();
+		this.storages.tables.check_change_ticks(change_tick);
+		this.storages.sparse_sets.check_change_ticks(change_tick);
+		ArrayList<Column> values = this.archetypes.resource().getUniqueComponents().getValues();
+		for (int i = 0; i < values.size(); i++) {
+			values.get(i).check_change_ticks(change_tick);
+		}
+	}
+
+	public void clear_entities() {
+		this.storages.tables.clear();
+		this.storages.sparse_sets.clear();
+		this.archetypes.clear_entities();
+		this.entities.clear();
+	}
+
+	@Override
+	public String toString() {
+		return new StringBuilder().append("World{").append("\n\tid=").append(this.id).append(",\n\tentity_count=").append(this.entities.size()).append(",\n\tarchetype_count=").append(this.archetypes.size()).append(",\n\tcomponent_count=").append(this.components.size()).append(",\n\tresource_count=").append(this.archetypes.resource().getUniqueComponents().size()).append("\n}").toString();
+	}
+
 	public int init_component(Class component_class) {
 		return components.init_component(this.storages, component_class);
 	}
@@ -127,12 +169,57 @@ public class World {
 		return entities;
 	}
 
-	public <T> T get(long entity, Class<T> component_class) {
+	public <T> T get_component(long entity, Class<T> component_class) {
 		Entity e = this.get_entity(entity);
 		if (e == null) {
 			return null;
 		} else {
 			return e.get(component_class);
+		}
+	}
+
+	public <T> T set_component(long entity, Class<T> component_class) {
+		Entity e = this.get_entity(entity);
+		if (e == null) {
+			return null;
+		} else {
+			return e.set(component_class);
+		}
+	}
+
+	public <T> void insert_component(long entity, T component) {
+		Entity e = this.get_entity(entity);
+		if (e == null) {
+			return;
+		} else {
+			e.insert(component);
+		}
+	}
+
+	public <T> void remove_component(long entity, Class<T> component_class) {
+		Entity e = this.get_entity(entity);
+		if (e == null) {
+			return;
+		} else {
+			e.remove(component_class);
+		}
+	}
+
+	public <T extends Bundle> void insert_bundle(long entity, T bundle) {
+		Entity e = this.get_entity(entity);
+		if (e == null) {
+			return;
+		} else {
+			e.insert_bundle(bundle);
+		}
+	}
+
+	public <T extends BundleFactory> void remove_bundle(long entity, T bundle_factory) {
+		Entity e = this.get_entity(entity);
+		if (e == null) {
+			return;
+		} else {
+			e.remove_bundle(bundle_factory);
 		}
 	}
 
@@ -144,11 +231,25 @@ public class World {
 		});
 	}
 
-	public int getChangeTick() {
-		return this.change_tick.get();
+	public boolean despawn(long entity) {
+		Entity e = this.get_entity(entity);
+		if (e == null) {
+			return false;
+		} else {
+			e.despawn();
+			return true;
+		}
 	}
 
-	public int getLastChangeTick() {
-		return this.last_change_tick;
+	public void clear_trackers() {
+		ArrayList<ArrayList<Long>> values = this.removed_components.getValues();
+		for (int i = 0; i < values.size(); i++) {
+			values.get(i).clear();
+		}
+		this.last_change_tick = this.incrementChangeTick();
+	}
+
+	public <Q extends WorldQuery> QueryState query(Q fetch_query) {
+		return new QueryState(this, fetch_query, WorldFilterQuery.NONE);
 	}
 }
