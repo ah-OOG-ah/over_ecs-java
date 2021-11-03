@@ -77,6 +77,7 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 		int change_tick;
 		boolean is_dense;
 		StorageType storage_type;
+		private Mut<Component> mutable;
 
 		public ImplFetch(World world, FetchState fetch_state, int last_change_tick, int change_tick, Class<? extends Component> component_class) {
 			ComponentInfo info = world.getComponents().getInfoFromClass(component_class);
@@ -99,6 +100,7 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 			this.entity_table_rows = null;
 			this.last_change_tick = last_change_tick;
 			this.change_tick = change_tick;
+			this.mutable = new Mut<Component>(null, null, last_change_tick, change_tick);
 		}
 
 		@Override
@@ -133,12 +135,14 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 				int table_row = this.entity_table_rows.get(archetype_index);
 				Component value = this.table_components.get(table_row);
 				ComponentTicks ticks = this.table_ticks.get(table_row);
-				return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
+				return this.mutable.unsafe_update_internal(value, ticks);
+				//return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
 			} else if (this.storage_type == StorageType.SparseSet) {
 				long entity = this.entities.get(archetype_index);
 				Component value = this.sparse_set.get(entity);
 				ComponentTicks ticks = this.sparse_set.get_ticks(entity);
-				return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
+				return this.mutable.unsafe_update_internal(value, ticks);
+				//return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
 			} else {
 				throw new RuntimeException("Invalid StorageType: " + this.storage_type.getClass().getName());
 			}
@@ -148,7 +152,8 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 		public Object table_fetch(int table_row) {
 			Component value = this.table_components.get(table_row);
 			ComponentTicks ticks = this.table_ticks.get(table_row);
-			return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
+			return this.mutable.unsafe_update_internal(value, ticks);
+			//return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
 		}
 	}
 }

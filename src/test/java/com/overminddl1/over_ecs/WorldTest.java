@@ -8,12 +8,17 @@ import com.overminddl1.over_ecs.test.ComponentsTestData.TestingI;
 import com.overminddl1.over_ecs.test.ComponentsTestData.TestingS;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WorldTest {
 
+
+	static final int entity_count = 1_000_000;
+	static final List<TestingI> anArray = IntStream.range(0, entity_count / 10).mapToObj(TestingI::new).toList();
 
 	@Test
 	void spawn_and_slow_access() {
@@ -34,9 +39,9 @@ class WorldTest {
 		world.init_component(TestingI.class);
 		QueryState query_si = world.query(WorldQuery.builder().read_entities().read_component(TestingS.class).write_component(TestingI.class));
 		QueryState query_bench = world.query(WorldQuery.builder().read_component(TestingI.class));
+		QueryState query_bench_rw = world.query(WorldQuery.builder().write_component(TestingI.class));
 		BundleN bundle_s = new BundleN(new TestingS("String"));
 		BundleN bundle_si = new BundleN(new TestingS("String"), new TestingI(-1));
-		final int entity_count = 10000000;
 		for (int i = 0; i < entity_count; i++) {
 			Entity entity = world.spawn();
 			if (i % 10 == 0) {
@@ -61,23 +66,27 @@ class WorldTest {
 			count.getAndIncrement();
 		});
 		assertEquals(entity_count / 10, count.get());
-		int r0 = simple_query_benches(0, query_bench);
-		int r1 = simple_query_benches(1, query_bench);
-		int r2 = simple_query_benches(2, query_bench);
-		int r3 = simple_query_benches(3, query_bench);
-		int r4 = simple_query_benches(4, query_bench);
-		int r5 = simple_query_benches(5, query_bench);
-		assertEquals(r0, r1);
-		assertEquals(r0, r2);
-		assertEquals(r0, r3);
-		assertEquals(r0, r4);
-		assertEquals(r0, r5);
+		int r0 = simple_query_benches("RO-0", query_bench);
+		for (int i = 1; i < 20; i++) {
+			int r1 = simple_query_benches("RO-" + i, query_bench);
+			assertEquals(r0, r1);
+		}
+		r0 = simple_query_benches_rw("RW-0", query_bench_rw);
+		for (int i = 1; i < 20; i++) {
+			int r1 = simple_query_benches_rw("RW-" + i, query_bench_rw);
+			assertEquals(r0, r1);
+		}
 	}
 
-	int simple_query_benches(int round, QueryState query) {
+	int simple_query_benches(String round, QueryState query) {
 		System.out.println("Round " + round);
 		TestingI ret = new TestingI(0);
 		long start_time = System.nanoTime();
+		for (TestingI i : anArray) {
+			ret.value += i.value;
+		}
+		long list_iter_time = System.nanoTime() - start_time;
+		start_time = System.nanoTime();
 		query.for_each((Object[] things) -> {
 			var i = (TestingI) things[0];
 			ret.value += i.value;
@@ -87,6 +96,26 @@ class WorldTest {
 		for (Object things : query) {
 			var i = (TestingI) (((Object[]) things)[0]);
 			ret.value += i.value;
+		}
+		long for_iter_time = System.nanoTime() - start_time;
+		System.out.println("FastestArrayListIter time: " + (list_iter_time / 1000) + "us\nForEach time: " + (for_each_time / 1000) + "us\nForIter time: " + (for_iter_time / 1000) + "us");
+		return ret.value;
+	}
+
+	@SuppressWarnings("unchecked")
+	int simple_query_benches_rw(String round, QueryState query) {
+		System.out.println("Round " + round);
+		TestingI ret = new TestingI(0);
+		long start_time = System.nanoTime();
+		query.for_each((Object[] things) -> {
+			var i = (Mut<TestingI>) things[0];
+			ret.value += i.get().value;
+		});
+		long for_each_time = System.nanoTime() - start_time;
+		start_time = System.nanoTime();
+		for (Object things : query) {
+			var i = (Mut<TestingI>) (((Object[]) things)[0]);
+			ret.value += i.get().value;
 		}
 		long for_iter_time = System.nanoTime() - start_time;
 		System.out.println("ForEach time: " + (for_each_time / 1000) + "us\nForIter time: " + (for_iter_time / 1000) + "us");

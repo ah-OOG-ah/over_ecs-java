@@ -44,4 +44,10 @@ public class Mut<T extends Component> implements DetectChanges {
 	public String toString() {
 		return "Mut{" + value + '}';
 	}
+
+	public Mut<T> unsafe_update_internal(T value, ComponentTicks component_ticks) {
+		this.value = value;
+		this.component_ticks = component_ticks;
+		return this;
+	}
 }
