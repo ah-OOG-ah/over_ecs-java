@@ -29,7 +29,7 @@ public class WorldBench {
 	@Param({"10"})
 	public int entity_divisor;
 
-	@Param({"50000"})
+	@Param({"10000"})
 	public int par_batch_size;
 	private World world;
 	private QueryState query_reset;
