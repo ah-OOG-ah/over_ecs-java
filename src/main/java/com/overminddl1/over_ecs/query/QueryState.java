@@ -7,8 +7,12 @@ import com.overminddl1.over_ecs.entities.EntityLocation;
 import com.overminddl1.over_ecs.storages.Table;
 import com.overminddl1.over_ecs.storages.Tables;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 public class QueryState implements Iterable<Object> {
@@ -174,8 +178,8 @@ public class QueryState implements Iterable<Object> {
 		FilterFetch filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
 		if (fetch.is_dense() && filter.is_dense()) {
 			Tables tables = world.getStorages().tables;
-			for (int table_id = 0; table_id < this.matched_table_ids.size(); table_id++) {
-				Table table = tables.get(this.matched_table_ids.get(table_id));
+			for (int table_idx = 0; table_idx < this.matched_table_ids.size(); table_idx++) {
+				Table table = tables.get(this.matched_table_ids.get(table_idx));
 				fetch.set_table(this.fetch_state, table);
 				filter.set_table(this.filter_state, table);
 				for (int table_index = 0; table_index < table.size(); table_index++) {
@@ -199,6 +203,205 @@ public class QueryState implements Iterable<Object> {
 					func.accept((T) fetch.archetype_fetch(archetype_index));
 				}
 			}
+		}
+	}
+
+	public <T> void for_each_packed(Consumer<T> func) {
+		this.for_each_packed(this.world, func);
+	}
+
+	public <T> void for_each_packed(World world, Consumer<T> func) {
+		this.validate_world_and_update_archetypes(world);
+		this.for_each_packed_manual(world, func, world.getLastChangeTick(), world.getChangeTick());
+	}
+
+	public <T> void for_each_packed_manual(Consumer<T> func, int last_change_tick, int change_tick) {
+		this.for_each_packed_manual(this.world, func, last_change_tick, change_tick);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> void for_each_packed_manual(World world, Consumer<T> func, int last_change_tick, int change_tick) {
+		if (this.filter_factory != WorldFilterQuery.NONE) {
+			throw new UnsupportedOperationException("Filter queries are not supported on dense iterations");
+		}
+		Fetch fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+		if (fetch.is_dense()) {
+			Tables tables = world.getStorages().tables;
+			for (int table_idx = 0; table_idx < this.matched_table_ids.size(); table_idx++) {
+				Table table = tables.get(this.matched_table_ids.get(table_idx));
+				fetch.set_table(this.fetch_state, table);
+				func.accept((T) fetch.table_fetch_packed());
+			}
+		} else {
+			Archetypes archetypes = world.getArchetypes();
+			Tables tables = world.getStorages().tables;
+			for (int i = 0; i < this.matched_archetype_ids.size(); i++) {
+				Archetype archetype = archetypes.get(this.matched_archetype_ids.get(i));
+				fetch.set_archetype(this.fetch_state, archetype, tables);
+				func.accept((T) fetch.archetype_fetch_packed());
+			}
+		}
+	}
+
+	public <T> void par_for_each(ExecutorService task_pool, int batch_size, Consumer<T> func) {
+		this.par_for_each(this.world, task_pool, batch_size, func);
+	}
+
+	public <T> void par_for_each(World world, ExecutorService task_pool, int batch_size, Consumer<T> func) {
+		this.validate_world_and_update_archetypes(world);
+		this.par_for_each_manual(world, task_pool, batch_size, func, world.getLastChangeTick(), world.getChangeTick());
+	}
+
+	public <T> void par_for_each_manual(ExecutorService task_pool, int batch_size, Consumer<T> func, int last_change_tick, int change_tick) {
+		this.par_for_each_manual(this.world, task_pool, batch_size, func, last_change_tick, change_tick);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> void par_for_each_manual(World world, ExecutorService task_pool, int batch_size, Consumer<T> func, int last_change_tick, int change_tick) {
+		ArrayDeque<Future<Void>> tasks = new ArrayDeque<Future<Void>>(); // Java's tasks system really really sucks, what on earth?!?
+		final Fetch fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+		final FilterFetch filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
+		if (fetch.is_dense() && filter.is_dense()) {
+			Tables tables = world.getStorages().tables;
+			for (int i = 0; i < this.matched_table_ids.size(); i++) {
+				final int final_i = i; // The heck java...
+				Table table = tables.get(this.matched_table_ids.get(i));
+				int offset = 0;
+				while (offset < table.size()) {
+					final int final_offset = offset;
+					tasks.add(task_pool.submit(() -> {
+						Fetch inner_fetch = fetch;
+						FilterFetch inner_filter = filter;
+						if (final_i == 0 && final_offset > 0) {
+							inner_fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+							inner_filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
+						}
+						inner_fetch.set_table(this.fetch_state, table);
+						inner_filter.set_table(this.filter_state, table);
+						int len = Math.min(batch_size, table.size() - final_offset);
+						for (int table_index = final_offset; table_index < (final_offset + len); table_index++) {
+							if (!inner_filter.table_filter_fetch(table_index)) {
+								continue;
+							}
+							func.accept((T) inner_fetch.table_fetch(table_index));
+						}
+						return null;
+					}));
+					offset += batch_size;
+				}
+			}
+		} else {
+			Archetypes archetypes = world.getArchetypes();
+			for (int i = 0; i < this.matched_archetype_ids.size(); i++) {
+				final int final_i = i; // The heck java...
+				int offset = 0;
+				Archetype archetype = archetypes.get(this.matched_archetype_ids.get(i));
+				Tables tables = world.getStorages().tables;
+				while (offset < archetype.size()) {
+					final int final_offset = offset;
+					tasks.add(task_pool.submit(() -> {
+						Fetch inner_fetch = fetch;
+						FilterFetch inner_filter = filter;
+						if (final_i == 0 && final_offset > 0) {
+							inner_fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+							inner_filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
+						}
+						inner_fetch.set_archetype(this.fetch_state, archetype, tables);
+						inner_filter.set_archetype(this.filter_state, archetype, tables);
+						int len = Math.min(batch_size, archetype.size() - final_offset);
+						for (int archetype_index = final_offset; archetype_index < (final_offset + len); archetype_index++) {
+							if (!inner_filter.archetype_filter_fetch(archetype_index)) {
+								continue;
+							}
+							func.accept((T) inner_fetch.archetype_fetch(archetype_index));
+						}
+						return null;
+					}));
+					offset += batch_size;
+				}
+			}
+		}
+		try {
+			while (!tasks.isEmpty()) {
+				tasks.remove().get();
+			}
+		} catch (ExecutionException | InterruptedException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	public <T> void par_for_each_packed(ExecutorService task_pool, int batch_size, ParPackedConsumer<T> func) {
+		this.par_for_each_packed(this.world, task_pool, batch_size, func);
+	}
+
+	public <T> void par_for_each_packed(World world, ExecutorService task_pool, int batch_size, ParPackedConsumer<T> func) {
+		this.validate_world_and_update_archetypes(world);
+		this.par_for_each_packed_manual(world, task_pool, batch_size, func, world.getLastChangeTick(), world.getChangeTick());
+	}
+
+	public <T> void par_for_each_packed_manual(ExecutorService task_pool, int batch_size, ParPackedConsumer<T> func, int last_change_tick, int change_tick) {
+		this.par_for_each_packed_manual(this.world, task_pool, batch_size, func, last_change_tick, change_tick);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> void par_for_each_packed_manual(World world, ExecutorService task_pool, int batch_size, ParPackedConsumer<T> func, int last_change_tick, int change_tick) {
+		if (this.filter_factory != WorldFilterQuery.NONE) {
+			throw new UnsupportedOperationException("Filter queries are not supported on dense iterations");
+		}
+		ArrayDeque<Future<Void>> tasks = new ArrayDeque<Future<Void>>(); // Java's tasks system really really sucks, what on earth?!?
+		final Fetch fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+		if (fetch.is_dense()) {
+			Tables tables = world.getStorages().tables;
+			for (int i = 0; i < this.matched_table_ids.size(); i++) {
+				final int final_i = i; // The heck java...
+				Table table = tables.get(this.matched_table_ids.get(i));
+				int offset = 0;
+				while (offset < table.size()) {
+					final int final_offset = offset;
+					tasks.add(task_pool.submit(() -> {
+						Fetch inner_fetch = fetch;
+						if (final_i == 0 && final_offset > 0) {
+							inner_fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+						}
+						inner_fetch.set_table(this.fetch_state, table);
+						int len = Math.min(batch_size, table.size() - final_offset);
+						func.accept((T) inner_fetch.table_fetch_packed(), final_offset, final_offset + len);
+						return null;
+					}));
+					offset += batch_size;
+				}
+			}
+		} else {
+			Archetypes archetypes = world.getArchetypes();
+			for (int i = 0; i < this.matched_archetype_ids.size(); i++) {
+				final int final_i = i; // The heck java...
+				int offset = 0;
+				Archetype archetype = archetypes.get(this.matched_archetype_ids.get(i));
+				Tables tables = world.getStorages().tables;
+				while (offset < archetype.size()) {
+					final int final_offset = offset;
+					tasks.add(task_pool.submit(() -> {
+						Fetch inner_fetch = fetch;
+						if (final_i == 0 && final_offset > 0) {
+							inner_fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
+						}
+						inner_fetch.set_archetype(this.fetch_state, archetype, tables);
+						int len = Math.min(batch_size, archetype.size() - final_offset);
+						func.accept((T) inner_fetch.archetype_fetch_packed(), final_offset, final_offset + len);
+						return null;
+					}));
+					offset += batch_size;
+				}
+			}
+		}
+		try {
+			while (!tasks.isEmpty()) {
+				tasks.remove().get();
+			}
+		} catch (ExecutionException | InterruptedException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 }

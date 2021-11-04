@@ -133,5 +133,21 @@ public class ComponentReadWorldQuery implements WorldQuery {
 		public Component table_fetch(int table_row) {
 			return this.table_components.get(table_row);
 		}
+
+		@Override
+		public Object archetype_fetch_packed() {
+			if (this.storage_type == StorageType.Table) {
+				return this.table_components;
+			} else if (this.storage_type == StorageType.SparseSet) {
+				return this.sparse_set;
+			} else {
+				throw new RuntimeException("Invalid StorageType: " + this.storage_type.getClass().getName());
+			}
+		}
+
+		@Override
+		public Object table_fetch_packed() {
+			return this.table_components;
+		}
 	}
 }

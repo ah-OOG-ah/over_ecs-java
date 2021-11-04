@@ -89,7 +89,7 @@ public class WorldQueryBuilder implements WorldQuery {
 
 	private class ImplFetch implements Fetch {
 		Fetch[] fetches;
-		Object[] holder = null;
+		Object[] holder;
 
 		public ImplFetch(World world, FetchState fetch_state, int last_change_tick, int change_tick) {
 			ImplFetchState state = (ImplFetchState) fetch_state;
@@ -138,6 +138,22 @@ public class WorldQueryBuilder implements WorldQuery {
 		public Object table_fetch(int table_row) {
 			for (int i = 0; i < this.fetches.length; i++) {
 				this.holder[i] = this.fetches[i].table_fetch(table_row);
+			}
+			return this.holder;
+		}
+
+		@Override
+		public Object archetype_fetch_packed() {
+			for (int i = 0; i < this.fetches.length; i++) {
+				this.holder[i] = this.fetches[i].archetype_fetch_packed();
+			}
+			return this.holder;
+		}
+
+		@Override
+		public Object table_fetch_packed() {
+			for (int i = 0; i < this.fetches.length; i++) {
+				this.holder[i] = this.fetches[i].table_fetch_packed();
 			}
 			return this.holder;
 		}

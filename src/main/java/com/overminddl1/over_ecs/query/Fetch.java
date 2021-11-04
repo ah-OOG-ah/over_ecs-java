@@ -14,4 +14,8 @@ public interface Fetch {
 	Object archetype_fetch(int archetype_index);
 
 	Object table_fetch(int table_row);
+
+	Object archetype_fetch_packed();
+
+	Object table_fetch_packed();
 }

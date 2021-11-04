@@ -60,6 +60,16 @@ public class EntitiesWorldQuery implements WorldQuery {
 			public Object table_fetch(int table_row) {
 				return this.entities.get(table_row);
 			}
+
+			@Override
+			public Object archetype_fetch_packed() {
+				return this.entities;
+			}
+
+			@Override
+			public Object table_fetch_packed() {
+				return this.entities;
+			}
 		};
 	}
 }

@@ -8,7 +8,7 @@ import com.overminddl1.over_ecs.storages.Tables;
 
 public interface WorldFilterQuery extends WorldQuery {
 	WorldFilterQuery NONE = new WorldFilterQuery() {
-		private FilterFetch filter_fetch = new FilterFetch() {
+		private final FilterFetch filter_fetch = new FilterFetch() {
 			@Override
 			public boolean is_dense() {
 				return true;
@@ -41,8 +41,18 @@ public interface WorldFilterQuery extends WorldQuery {
 			public boolean table_filter_fetch(int table_row) {
 				return true;
 			}
+
+			@Override
+			public Object archetype_fetch_packed() {
+				return null;
+			}
+
+			@Override
+			public Object table_fetch_packed() {
+				return null;
+			}
 		};
-		private FetchState filter_state = new FetchState() {
+		private final FetchState filter_state = new FetchState() {
 			@Override
 			public void update_component_access(FilteredAccess access) {
 			}

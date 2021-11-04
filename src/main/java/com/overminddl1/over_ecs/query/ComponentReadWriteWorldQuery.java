@@ -136,13 +136,11 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 				Component value = this.table_components.get(table_row);
 				ComponentTicks ticks = this.table_ticks.get(table_row);
 				return this.mutable.unsafe_update_internal(value, ticks);
-				//return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
 			} else if (this.storage_type == StorageType.SparseSet) {
 				long entity = this.entities.get(archetype_index);
 				Component value = this.sparse_set.get(entity);
 				ComponentTicks ticks = this.sparse_set.get_ticks(entity);
 				return this.mutable.unsafe_update_internal(value, ticks);
-				//return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
 			} else {
 				throw new RuntimeException("Invalid StorageType: " + this.storage_type.getClass().getName());
 			}
@@ -153,7 +151,16 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 			Component value = this.table_components.get(table_row);
 			ComponentTicks ticks = this.table_ticks.get(table_row);
 			return this.mutable.unsafe_update_internal(value, ticks);
-			//return new Mut<Component>(value, ticks, this.last_change_tick, this.change_tick);
+		}
+
+		@Override
+		public Object archetype_fetch_packed() {
+			throw new RuntimeException("TODO: Packed iterations are not supported on mutations at this time");
+		}
+
+		@Override
+		public Object table_fetch_packed() {
+			throw new RuntimeException("TODO: Packed iterations are not supported on mutations at this time");
 		}
 	}
 }

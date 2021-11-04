@@ -9,6 +9,8 @@ import com.overminddl1.over_ecs.test.ComponentsTestData.TestingS;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -18,6 +20,7 @@ class WorldTest {
 
 
 	static final int entity_count = 1_000_000;
+	static final int batch_size = 1000;
 	static final List<TestingI> anArray = IntStream.range(0, entity_count / 10).mapToObj(TestingI::new).toList();
 
 	@Test
@@ -66,19 +69,21 @@ class WorldTest {
 			count.getAndIncrement();
 		});
 		assertEquals(entity_count / 10, count.get());
-		int r0 = simple_query_benches("RO-0", query_bench);
+		ExecutorService task_pool = ForkJoinPool.commonPool();
+		System.out.println("Task Pool Threads: " + ForkJoinPool.getCommonPoolParallelism());
+		int r0 = simple_query_benches("RO-0", query_bench, task_pool, batch_size);
 		for (int i = 1; i < 20; i++) {
-			int r1 = simple_query_benches("RO-" + i, query_bench);
+			int r1 = simple_query_benches("RO-" + i, query_bench, task_pool, batch_size);
 			assertEquals(r0, r1);
 		}
-		r0 = simple_query_benches_rw("RW-0", query_bench_rw);
+		r0 = simple_query_benches_rw("RW-0", query_bench_rw, task_pool, batch_size);
 		for (int i = 1; i < 20; i++) {
-			int r1 = simple_query_benches_rw("RW-" + i, query_bench_rw);
+			int r1 = simple_query_benches_rw("RW-" + i, query_bench_rw, task_pool, batch_size);
 			assertEquals(r0, r1);
 		}
 	}
 
-	int simple_query_benches(String round, QueryState query) {
+	int simple_query_benches(String round, QueryState query, ExecutorService task_pool, int batch_size) {
 		System.out.println("Round " + round);
 		TestingI ret = new TestingI(0);
 		long start_time = System.nanoTime();
@@ -92,18 +97,25 @@ class WorldTest {
 			ret.value += i.value;
 		});
 		long for_each_time = System.nanoTime() - start_time;
+		TestingI black_box = new TestingI(0);
+		start_time = System.nanoTime();
+		query.par_for_each(task_pool, batch_size, (Object[] things) -> {
+			var i = (TestingI) things[0];
+			black_box.value += i.value;
+		});
+		long par_for_each_time = System.nanoTime() - start_time;
 		start_time = System.nanoTime();
 		for (Object things : query) {
 			var i = (TestingI) (((Object[]) things)[0]);
 			ret.value += i.value;
 		}
 		long for_iter_time = System.nanoTime() - start_time;
-		System.out.println("FastestArrayListIter time: " + (list_iter_time / 1000) + "us\nForEach time: " + (for_each_time / 1000) + "us\nForIter time: " + (for_iter_time / 1000) + "us");
+		System.out.println("FastestArrayListIter time: " + (list_iter_time / 1000) + "us\nForEach time: " + (for_each_time / 1000) + "us\nParForEach time: " + (par_for_each_time / 1000) + "us\nForIter time: " + (for_iter_time / 1000) + "us");
 		return ret.value;
 	}
 
 	@SuppressWarnings("unchecked")
-	int simple_query_benches_rw(String round, QueryState query) {
+	int simple_query_benches_rw(String round, QueryState query, ExecutorService task_pool, int batch_size) {
 		System.out.println("Round " + round);
 		TestingI ret = new TestingI(0);
 		long start_time = System.nanoTime();
@@ -112,14 +124,20 @@ class WorldTest {
 			ret.value += i.get().value;
 		});
 		long for_each_time = System.nanoTime() - start_time;
+		TestingI black_box = new TestingI(0);
+		start_time = System.nanoTime();
+		query.par_for_each(task_pool, batch_size, (Object[] things) -> {
+			var i = (Mut<TestingI>) things[0];
+			black_box.value += i.get().value;
+		});
+		long par_for_each_time = System.nanoTime() - start_time;
 		start_time = System.nanoTime();
 		for (Object things : query) {
 			var i = (Mut<TestingI>) (((Object[]) things)[0]);
 			ret.value += i.get().value;
 		}
 		long for_iter_time = System.nanoTime() - start_time;
-		System.out.println("ForEach time: " + (for_each_time / 1000) + "us\nForIter time: " + (for_iter_time / 1000) + "us");
+		System.out.println("ForEach time: " + (for_each_time / 1000) + "us\nParForEach time: " + (par_for_each_time / 1000) + "us\nForIter time: " + (for_iter_time / 1000) + "us");
 		return ret.value;
 	}
-
 }

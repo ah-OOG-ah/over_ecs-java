@@ -1,5 +1,6 @@
 plugins {
     java
+    id("me.champeau.jmh") version "0.6.6"
 }
 
 group = "com.overminddl1.over_ecs"
@@ -17,8 +18,10 @@ gradle.projectsEvaluated {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    jmh("org.openjdk.jmh:jmh-core:1.33")
+    jmh("org.openjdk.jmh:jmh-generator-annprocess:1.33")
 }
 
 tasks.getByName<Test>("test") {
