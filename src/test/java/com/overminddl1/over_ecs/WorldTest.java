@@ -4,9 +4,11 @@ import com.overminddl1.over_ecs.bundles.BundleN;
 import com.overminddl1.over_ecs.query.QueryState;
 import com.overminddl1.over_ecs.query.WorldFilterQuery;
 import com.overminddl1.over_ecs.query.WorldQuery;
+import com.overminddl1.over_ecs.storages.ComponentSparseSet;
 import com.overminddl1.over_ecs.test.ComponentsTestData.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
@@ -18,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class WorldTest {
 
 
-	//static final int entity_count = 1_000_000;
-	static final int entity_count = 20;
+	static final int entity_count = 1_000_000;
+	//static final int entity_count = 30;
 	static final int batch_size = 1000;
 	static final List<TestingI> anArray = IntStream.range(0, entity_count / 10).mapToObj(TestingI::new).toList();
 
@@ -148,6 +150,7 @@ class WorldTest {
 		world.init_component(TestingS.class);
 		world.init_component(TestingFSparse.class);
 		QueryState query_si = world.query(WorldQuery.builder().read_entities().read_component(TestingS.class).write_component(TestingFSparse.class));
+		QueryState query_f = world.query(WorldQuery.builder().read_entities().read_component(TestingFSparse.class));
 		BundleN bundle_s = new BundleN(new TestingS("String"));
 		BundleN bundle_si = new BundleN(new TestingS("String"), new TestingFSparse());
 		for (int i = 0; i < entity_count; i++) {
@@ -188,5 +191,28 @@ class WorldTest {
 			newCount++;
 		}
 		assertEquals(entity_count / 10, newCount);
+		query_f.for_each_packed(world, (Object[] things) -> {
+			var es = (ArrayList<Long>) things[0];
+			var fs = (ComponentSparseSet) things[1];
+			for (Long e : es) {
+				if(Entity.id(e) % 30 == 0) {
+					fs.remove(e);
+				}
+			}
+		});
+		newCount = 0;
+		for (Object thing: query_si) {
+			Object[] things = (Object[]) thing;
+			var e = (Long) things[0];
+			var s = (TestingS) things[1];
+			var i = (Mut<TestingFSparse>) things[2];
+			assertNotNull(e);
+			assertTrue(s.value.startsWith("String:"));
+			float iv = i.get().value * 0.5F;
+			assertEquals(s.value, "String:" + iv);
+			//i.set().value = iv * 2;
+			newCount++;
+		}
+		assertEquals(entity_count / 30, newCount);
 	}
 }

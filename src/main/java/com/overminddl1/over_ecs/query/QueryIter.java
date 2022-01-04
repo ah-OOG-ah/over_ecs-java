@@ -37,11 +37,11 @@ public class QueryIter implements Iterator<Object> {
 		this.archetype_ids = query_state.matched_archetype_ids;
 		this.current_len = 0;
 		this.current_index = 0;
-		this.is_dense = false;
+		this.is_dense = this.fetch.is_dense() && this.filter.is_dense();
 	}
 
 	public boolean none_remaining() {
-		if (this.fetch.is_dense() && this.filter.is_dense()) {
+		if (this.is_dense) {
 			while (true) {
 				if (this.current_index == this.current_len) {
 					if (this.cur_table_id_index >= this.table_ids.size()) {
@@ -85,7 +85,7 @@ public class QueryIter implements Iterator<Object> {
 	@Override
 	public boolean hasNext() {
 		this.current_index += 1;
-		if (this.fetch.is_dense() && this.filter.is_dense()) {
+		if (this.is_dense) {
 			while (true) {
 				if (this.current_index >= this.current_len) {
 					if (this.cur_table_id_index >= this.table_ids.size()) {
@@ -103,7 +103,6 @@ public class QueryIter implements Iterator<Object> {
 					this.current_index += 1;
 					continue;
 				}
-				this.is_dense = true;
 				return true;
 			}
 		} else {
@@ -124,7 +123,6 @@ public class QueryIter implements Iterator<Object> {
 					this.current_index += 1;
 					continue;
 				}
-				this.is_dense = false;
 				return true;
 			}
 		}
