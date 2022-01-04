@@ -79,14 +79,15 @@ public class ComponentReadWorldQuery implements WorldQuery {
 				throw new RuntimeException("Component class " + component_class.getName() + " is not registered with the world.");
 			}
 			this.storage_type = info.getStorageType();
-			if (this.storage_type == StorageType.Table) {
-				this.is_dense = true;
-				this.sparse_set = null;
-			} else if (this.storage_type == StorageType.SparseSet) {
-				this.is_dense = false;
-				this.sparse_set = world.getStorages().sparse_sets.get(((ImplFetchState) fetch_state).component_id);
-			} else {
-				throw new RuntimeException("Invalid StorageType: " + this.storage_type.getClass().getName());
+			switch(this.storage_type) {
+				case Table:
+					this.is_dense = true;
+					this.sparse_set = null;
+					break;
+				case SparseSet:
+					this.is_dense = false;
+					this.sparse_set = world.getStorages().sparse_sets.get(((ImplFetchState) fetch_state).component_id);
+					break;
 			}
 			this.table_components = null;
 			this.entities = null;
@@ -100,14 +101,15 @@ public class ComponentReadWorldQuery implements WorldQuery {
 
 		@Override
 		public void set_archetype(FetchState fetch_state, Archetype archetype, Tables tables) {
-			if (this.storage_type == StorageType.Table) {
-				this.entity_table_rows = archetype.getEntityTableRows();
-				Column column = tables.get(archetype.getTableId()).get_column(((ImplFetchState) fetch_state).component_id);
-				this.table_components = column.data;
-			} else if (this.storage_type == StorageType.SparseSet) {
-				this.entities = archetype.getEntities();
-			} else {
-				throw new RuntimeException("Invalid StorageType: " + this.storage_type.getClass().getName());
+			switch(this.storage_type) {
+				case Table:
+					this.entity_table_rows = archetype.getEntityTableRows();
+					Column column = tables.get(archetype.getTableId()).get_column(((ImplFetchState) fetch_state).component_id);
+					this.table_components = column.data;
+					break;
+				case SparseSet:
+					this.entities = archetype.getEntities();
+					break;
 			}
 		}
 
@@ -118,15 +120,15 @@ public class ComponentReadWorldQuery implements WorldQuery {
 
 		@Override
 		public Component archetype_fetch(int archetype_index) {
-			if (this.storage_type == StorageType.Table) {
-				int table_row = this.entity_table_rows.get(archetype_index);
-				return this.table_components.get(table_row);
-			} else if (this.storage_type == StorageType.SparseSet) {
-				long entity = this.entities.get(archetype_index);
-				return this.sparse_set.get(entity);
-			} else {
-				throw new RuntimeException("Invalid StorageType: " + this.storage_type.getClass().getName());
+			switch(this.storage_type) {
+				case Table:
+					int table_row = this.entity_table_rows.get(archetype_index);
+					return this.table_components.get(table_row);
+				case SparseSet:
+					long entity = this.entities.get(archetype_index);
+					return this.sparse_set.get(entity);
 			}
+			throw new RuntimeException("Unreachable");
 		}
 
 		@Override
@@ -136,13 +138,13 @@ public class ComponentReadWorldQuery implements WorldQuery {
 
 		@Override
 		public Object archetype_fetch_packed() {
-			if (this.storage_type == StorageType.Table) {
-				return this.table_components;
-			} else if (this.storage_type == StorageType.SparseSet) {
-				return this.sparse_set;
-			} else {
-				throw new RuntimeException("Invalid StorageType: " + this.storage_type.getClass().getName());
+			switch(this.storage_type) {
+				case Table:
+					return this.table_components;
+				case SparseSet:
+					return this.sparse_set;
 			}
+			throw new RuntimeException("Unreachable");
 		}
 
 		@Override

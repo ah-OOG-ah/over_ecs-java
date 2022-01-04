@@ -4,8 +4,7 @@ import com.overminddl1.over_ecs.bundles.BundleN;
 import com.overminddl1.over_ecs.query.QueryState;
 import com.overminddl1.over_ecs.query.WorldFilterQuery;
 import com.overminddl1.over_ecs.query.WorldQuery;
-import com.overminddl1.over_ecs.test.ComponentsTestData.TestingI;
-import com.overminddl1.over_ecs.test.ComponentsTestData.TestingS;
+import com.overminddl1.over_ecs.test.ComponentsTestData.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class WorldTest {
 
 
-	static final int entity_count = 1_000_000;
+	//static final int entity_count = 1_000_000;
+	static final int entity_count = 20;
 	static final int batch_size = 1000;
 	static final List<TestingI> anArray = IntStream.range(0, entity_count / 10).mapToObj(TestingI::new).toList();
 
@@ -139,5 +139,54 @@ class WorldTest {
 		long for_iter_time = System.nanoTime() - start_time;
 		System.out.println("ForEach time: " + (for_each_time / 1000) + "us\nParForEach time: " + (par_for_each_time / 1000) + "us\nForIter time: " + (for_iter_time / 1000) + "us");
 		return ret.value;
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void sparse_access() {
+		World world = new World();
+		world.init_component(TestingS.class);
+		world.init_component(TestingFSparse.class);
+		QueryState query_si = world.query(WorldQuery.builder().read_entities().read_component(TestingS.class).write_component(TestingFSparse.class));
+		BundleN bundle_s = new BundleN(new TestingS("String"));
+		BundleN bundle_si = new BundleN(new TestingS("String"), new TestingFSparse());
+		for (int i = 0; i < entity_count; i++) {
+			Entity entity = world.spawn();
+			if (i % 10 == 0) {
+				entity.insert_bundle(bundle_si.set_unchecked(0, new TestingS("String:" + (float) i)).set_unchecked(1, new TestingFSparse((float) i)));
+			} else {
+				entity.insert_bundle(bundle_s.set_unchecked(0, new TestingS("String:" + (float) i)));
+			}
+		}
+		world.query(WorldFilterQuery.NONE).for_each(world, (thing) -> {
+			assertNull(thing, "asked for nothing, should get nothing");
+		});
+		AtomicInteger count = new AtomicInteger(0);
+		query_si.for_each(world, (Object[] things) -> {
+			var e = (Long) things[0];
+			var s = (TestingS) things[1];
+			var i = (Mut<TestingFSparse>) things[2];
+			assertNotNull(e);
+			assertTrue(s.value.startsWith("String:"));
+			float iv = i.get().value;
+			assertTrue(s.value.endsWith(Float.toString(iv)));
+			i.set().value = iv * 2;
+			count.getAndIncrement();
+		});
+		assertEquals(entity_count / 10, count.get());
+		int newCount = 0;
+		for (Object thing: query_si) {
+			Object[] things = (Object[]) thing;
+			var e = (Long) things[0];
+			var s = (TestingS) things[1];
+			var i = (Mut<TestingFSparse>) things[2];
+			assertNotNull(e);
+			assertTrue(s.value.startsWith("String:"));
+			float iv = i.get().value * 0.5F;
+			assertEquals(s.value, "String:" + iv);
+			//i.set().value = iv * 2;
+			newCount++;
+		}
+		assertEquals(entity_count / 10, newCount);
 	}
 }

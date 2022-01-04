@@ -22,6 +22,7 @@ public class QueryIter implements Iterator<Object> {
 	FilterFetch filter;
 	int current_len;
 	int current_index;
+	boolean is_dense;
 
 	public QueryIter(World world, QueryState query_state, int last_change_tick, int change_tick) {
 		this.fetch = query_state.fetch_factory.init_fetch(world, query_state.fetch_state, last_change_tick, change_tick);
@@ -36,6 +37,7 @@ public class QueryIter implements Iterator<Object> {
 		this.archetype_ids = query_state.matched_archetype_ids;
 		this.current_len = 0;
 		this.current_index = 0;
+		this.is_dense = false;
 	}
 
 	public boolean none_remaining() {
@@ -82,9 +84,10 @@ public class QueryIter implements Iterator<Object> {
 
 	@Override
 	public boolean hasNext() {
+		this.current_index += 1;
 		if (this.fetch.is_dense() && this.filter.is_dense()) {
 			while (true) {
-				if (this.current_index == this.current_len) {
+				if (this.current_index >= this.current_len) {
 					if (this.cur_table_id_index >= this.table_ids.size()) {
 						return false;
 					}
@@ -100,12 +103,12 @@ public class QueryIter implements Iterator<Object> {
 					this.current_index += 1;
 					continue;
 				}
-				this.current_index += 1;
+				this.is_dense = true;
 				return true;
 			}
 		} else {
 			while (true) {
-				if (this.current_index == this.current_len) {
+				if (this.current_index >= this.current_len) {
 					if (this.cur_archetype_id_index >= this.archetype_ids.size()) {
 						return false;
 					}
@@ -121,7 +124,7 @@ public class QueryIter implements Iterator<Object> {
 					this.current_index += 1;
 					continue;
 				}
-				this.current_index += 1;
+				this.is_dense = false;
 				return true;
 			}
 		}
@@ -129,8 +132,8 @@ public class QueryIter implements Iterator<Object> {
 
 	@Override
 	public Object next() {
-		if (this.fetch.is_dense() && this.filter.is_dense()) {
-			return this.fetch.table_fetch(this.current_index - 1);
+		if (this.is_dense) {
+			return this.fetch.table_fetch(this.current_index);
 		} else {
 			return this.fetch.archetype_fetch(this.current_index);
 		}

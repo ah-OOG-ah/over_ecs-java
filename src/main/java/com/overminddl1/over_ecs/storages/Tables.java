@@ -51,6 +51,12 @@ public class Tables {
 		this.table_ids.clear();
 	}
 
+	public void clear_data() {
+		for (Table table: this.tables) {
+			table.clear();
+		}
+	}
+
 	public void check_change_ticks(int change_tick) {
 		for (int i = 0; i < this.tables.size(); i++) {
 			this.tables.get(i).check_change_ticks(change_tick);

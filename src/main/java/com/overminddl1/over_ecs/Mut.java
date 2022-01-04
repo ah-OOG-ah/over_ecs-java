@@ -3,7 +3,7 @@ package com.overminddl1.over_ecs;
 import com.overminddl1.over_ecs.components.ComponentTicks;
 import com.overminddl1.over_ecs.world.DetectChanges;
 
-public class Mut<T extends Component> implements DetectChanges {
+public final class Mut<T extends Component> implements DetectChanges {
 	private T value;
 	private ComponentTicks component_ticks;
 	private int last_change_tick;

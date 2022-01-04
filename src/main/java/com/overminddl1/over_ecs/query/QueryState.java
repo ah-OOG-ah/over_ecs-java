@@ -272,10 +272,10 @@ public class QueryState implements Iterable<Object> {
 					tasks.add(task_pool.submit(() -> {
 						Fetch inner_fetch = fetch;
 						FilterFetch inner_filter = filter;
-						if (final_i == 0 && final_offset > 0) {
+						//if (final_i == 0 && final_offset > 0) {
 							inner_fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
 							inner_filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
-						}
+						//}
 						inner_fetch.set_table(this.fetch_state, table);
 						inner_filter.set_table(this.filter_state, table);
 						int len = Math.min(batch_size, table.size() - final_offset);
@@ -302,10 +302,10 @@ public class QueryState implements Iterable<Object> {
 					tasks.add(task_pool.submit(() -> {
 						Fetch inner_fetch = fetch;
 						FilterFetch inner_filter = filter;
-						if (final_i == 0 && final_offset > 0) {
+						//if (final_i == 0 && final_offset > 0) {
 							inner_fetch = fetch_factory.init_fetch(world, this.fetch_state, last_change_tick, change_tick);
 							inner_filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
-						}
+						//}
 						inner_fetch.set_archetype(this.fetch_state, archetype, tables);
 						inner_filter.set_archetype(this.filter_state, archetype, tables);
 						int len = Math.min(batch_size, archetype.size() - final_offset);

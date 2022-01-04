@@ -4,7 +4,6 @@ import com.overminddl1.over_ecs.*;
 import com.overminddl1.over_ecs.archetypes.AddBundle;
 import com.overminddl1.over_ecs.archetypes.Archetype;
 import com.overminddl1.over_ecs.archetypes.Edges;
-import com.overminddl1.over_ecs.components.ComponentInfo;
 import com.overminddl1.over_ecs.components.ComponentTicks;
 import com.overminddl1.over_ecs.storages.Column;
 import com.overminddl1.over_ecs.storages.ComponentSparseSet;
@@ -77,19 +76,19 @@ public class BundleInfo {
 			@Override
 			public void accept(Component component) {
 				int component_id = self.component_ids[bundle_component];
-				StorageType storage_type = self.storage_types[bundle_component];
-				if (storage_type == StorageType.Table) {
-					Column column = table.get_column(component_id);
-					if (!add_bundle.bundle_status.get(bundle_component)) {
-						column.initialize(table_row, component, new ComponentTicks(change_tick));
-					} else {
-						column.replace(table_row, component, change_tick);
-					}
-				} else if (storage_type == StorageType.SparseSet) {
-					ComponentSparseSet sparse_set = sparse_sets.get(component_id);
-					sparse_set.insert(entity, component, change_tick);
-				} else {
-					throw new RuntimeException("Unknown storage type: " + storage_type);
+				switch (self.storage_types[bundle_component]) {
+					case Table:
+						Column column = table.get_column(component_id);
+						if (!add_bundle.bundle_status.get(bundle_component)) {
+							column.initialize(table_row, component, new ComponentTicks(change_tick));
+						} else {
+							column.replace(table_row, component, change_tick);
+						}
+						break;
+					case SparseSet:
+						ComponentSparseSet sparse_set = sparse_sets.get(component_id);
+						sparse_set.insert(entity, component, change_tick);
+						break;
 				}
 				bundle_component += 1;
 			}
@@ -111,14 +110,13 @@ public class BundleInfo {
 				bundle_status.add(true);
 			} else {
 				bundle_status.add(false);
-				ComponentInfo component_info = components.getInfo(component_id);
-				StorageType storage_type = component_info.getDescriptor().getStorageType();
-				if (storage_type == StorageType.Table) {
-					new_table_components.add(component_id);
-				} else if (storage_type == StorageType.SparseSet) {
-					new_sparse_set_components.add(component_id);
-				} else {
-					throw new RuntimeException("Unknown storage type: " + storage_type);
+				switch (components.getInfo(component_id).getStorageType()) {
+					case Table:
+						new_table_components.add(component_id);
+						break;
+					case SparseSet:
+						new_sparse_set_components.add(component_id);
+						break;
 				}
 			}
 		}

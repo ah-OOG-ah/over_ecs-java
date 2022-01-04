@@ -76,17 +76,16 @@ public final class Entity {
 		ComponentInfo component_info = components.getInfo(component_id);
 		ArrayList<Long> removed_components = removed_components_set.get_or_insert_with(component_id, ArrayList::new);
 		removed_components.add(entity);
-		StorageType storage_type = component_info.getStorageType();
-		if (storage_type == StorageType.Table) {
-			Table table = storages.tables.get(archetype.getTableId());
-			Column column = table.get_column(component_id);
-			int table_row = archetype.getEntityTableRow(location.index);
-			return (Component) column.get_data(table_row);
-		} else if (storage_type == StorageType.SparseSet) {
-			return (Component) storages.sparse_sets.get(component_id).remove(entity);
-		} else {
-			throw new RuntimeException("Unsupported storage type: " + storage_type);
+		switch(component_info.getStorageType()) {
+			case Table:
+				Table table = storages.tables.get(archetype.getTableId());
+				Column column = table.get_column(component_id);
+				int table_row = archetype.getEntityTableRow(location.index);
+				return (Component) column.get_data(table_row);
+			case SparseSet:
+				return (Component) storages.sparse_sets.get(component_id).remove(entity);
 		}
+		throw new RuntimeException("Unreachable");
 	}
 
 	private static Integer remove_bundle_from_archetype(Archetypes archetypes, Storages storages, Components components, int archetype_id, BundleInfo bundle_info, boolean intersection) {
@@ -105,13 +104,13 @@ public final class Entity {
 			for (int i = 0; i < components_ids.length; i++) {
 				int component_id = components_ids[i];
 				if (current_archetype.contains(component_id)) {
-					ComponentInfo component_info = components.getInfo(component_id);
-					if (component_info.getStorageType() == StorageType.Table) {
-						removed_table_components.add(component_id);
-					} else if (component_info.getStorageType() == StorageType.SparseSet) {
-						removed_sparse_set_components.add(component_id);
-					} else {
-						throw new RuntimeException("Unsupported storage type: " + component_info.getStorageType());
+					switch(components.getInfo(component_id).getStorageType()) {
+						case Table:
+							removed_table_components.add(component_id);
+							break;
+						case SparseSet:
+							removed_sparse_set_components.add(component_id);
+							break;
 					}
 				} else if (!intersection) {
 					current_archetype.getEdges().insert_remove_bundle(bundle_info.getId(), null);
@@ -197,49 +196,46 @@ public final class Entity {
 	public Component get_component(int component_id) {
 		Archetype archetype = this.world.getArchetypes().get(this.location.archetype_id);
 		ComponentInfo component_info = this.world.getComponents().getInfo(component_id);
-		StorageType storage_type = component_info.getDescriptor().getStorageType();
-		if (storage_type == StorageType.Table) {
-			Table table = this.world.getStorages().tables.get(archetype.getTableId());
-			Column column = table.get_column(component_id);
-			if (column == null) {
-				return null;
-			}
-			int table_row = archetype.getEntityTableRow(this.location.index);
-			return column.data.get(table_row);
-		} else if (storage_type == StorageType.SparseSet) {
-			ComponentSparseSet sparse_set = this.world.getStorages().sparse_sets.get(component_id);
-			if (sparse_set == null) {
-				return null;
-			}
-			return sparse_set.get(entity);
-		} else {
-			throw new RuntimeException("Unsupported storage type: " + storage_type);
+		switch(this.world.getComponents().getInfo(component_id).getStorageType()) {
+			case Table:
+				Table table = this.world.getStorages().tables.get(archetype.getTableId());
+				Column column = table.get_column(component_id);
+				if (column == null) {
+					return null;
+				}
+				int table_row = archetype.getEntityTableRow(this.location.index);
+				return column.data.get(table_row);
+			case SparseSet:
+				ComponentSparseSet sparse_set = this.world.getStorages().sparse_sets.get(component_id);
+				if (sparse_set == null) {
+					return null;
+				}
+				return sparse_set.get(entity);
 		}
+		throw new RuntimeException("Unreachable");
 	}
 
 	public Component set_component(int component_id) {
 		Archetype archetype = this.world.getArchetypes().get(this.location.archetype_id);
-		ComponentInfo component_info = this.world.getComponents().getInfo(component_id);
-		StorageType storage_type = component_info.getDescriptor().getStorageType();
-		if (storage_type == StorageType.Table) {
-			Table table = this.world.getStorages().tables.get(archetype.getTableId());
-			Column column = table.get_column(component_id);
-			if (column == null) {
-				return null;
-			}
-			int table_row = archetype.getEntityTableRow(this.location.index);
-			column.get_ticks(table_row).set_changed(this.world.getChangeTick());
-			return column.data.get(table_row);
-		} else if (storage_type == StorageType.SparseSet) {
-			ComponentSparseSet sparse_set = this.world.getStorages().sparse_sets.get(component_id);
-			if (sparse_set == null) {
-				return null;
-			}
-			sparse_set.get_ticks(entity).set_changed(this.world.getChangeTick());
-			return sparse_set.get(entity);
-		} else {
-			throw new RuntimeException("Unsupported storage type: " + storage_type);
+		switch(this.world.getComponents().getInfo(component_id).getStorageType()) {
+			case Table:
+				Table table = this.world.getStorages().tables.get(archetype.getTableId());
+				Column column = table.get_column(component_id);
+				if (column == null) {
+					return null;
+				}
+				int table_row = archetype.getEntityTableRow(this.location.index);
+				column.get_ticks(table_row).set_changed(this.world.getChangeTick());
+				return column.data.get(table_row);
+			case SparseSet:
+				ComponentSparseSet sparse_set = this.world.getStorages().sparse_sets.get(component_id);
+				if (sparse_set == null) {
+					return null;
+				}
+				sparse_set.get_ticks(entity).set_changed(this.world.getChangeTick());
+				return sparse_set.get(entity);
 		}
+		throw new RuntimeException("Unreachable");
 	}
 
 	public <T extends Bundle> Entity insert_bundle(T bundle) {

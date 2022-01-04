@@ -1,4 +1,4 @@
-package com.overminddl1.over_ecs.test;
+package com.overminddl1.over_ecs.bench;
 
 import com.overminddl1.over_ecs.Component;
 

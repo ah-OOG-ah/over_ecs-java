@@ -8,7 +8,7 @@ public class ComponentDescriptor {
 	private final String name;
 	private final StorageType storage_type;
 	private final boolean is_multi_thread_safe;
-	private final Class component_class;
+	private final Class<? extends Component> component_class;
 	// Blah stupid java, no chance of packing...
 
 	public ComponentDescriptor(Class<? extends Component> component_class) {
@@ -26,7 +26,7 @@ public class ComponentDescriptor {
 		this.component_class = component_class;
 	}
 
-	public ComponentDescriptor(Class<Object> component_class, StorageType storage_type, boolean is_multi_thread_safe) {
+	public ComponentDescriptor(Class<? extends Component> component_class, StorageType storage_type, boolean is_split, boolean is_multi_thread_safe) {
 		this.name = component_class.getName();
 		this.storage_type = storage_type;
 		this.is_multi_thread_safe = is_multi_thread_safe;
@@ -45,7 +45,7 @@ public class ComponentDescriptor {
 		return this.is_multi_thread_safe;
 	}
 
-	public Class getCls() {
+	public Class<? extends Component> getCls() {
 		return this.component_class;
 	}
 }

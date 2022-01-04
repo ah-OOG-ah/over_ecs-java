@@ -22,8 +22,9 @@ public class Components {
 			index = this.components.size();
 			ComponentDescriptor descriptor = new ComponentDescriptor(component_class);
 			ComponentInfo info = new ComponentInfo(index, descriptor);
-			if (descriptor.getStorageType() == StorageType.SparseSet) {
-				storages.sparse_sets.get_or_insert(info);
+			switch(descriptor.getStorageType()) {
+				case SparseSet: storages.sparse_sets.get_or_insert(info);break;
+				case Table:break;
 			}
 			this.components.add(info);
 		}

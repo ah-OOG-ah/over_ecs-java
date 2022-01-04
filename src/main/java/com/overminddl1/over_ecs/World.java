@@ -105,7 +105,7 @@ public class World {
 	}
 
 	public void clear_entities() {
-		this.storages.tables.clear();
+		this.storages.tables.clear_data();
 		this.storages.sparse_sets.clear();
 		this.archetypes.clear_entities();
 		this.entities.clear();

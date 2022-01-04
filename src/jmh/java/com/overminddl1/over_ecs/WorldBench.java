@@ -3,8 +3,8 @@ package com.overminddl1.over_ecs;
 import com.overminddl1.over_ecs.bundles.BundleN;
 import com.overminddl1.over_ecs.query.QueryState;
 import com.overminddl1.over_ecs.query.WorldQuery;
-import com.overminddl1.over_ecs.test.ComponentsTestData.TestingI;
-import com.overminddl1.over_ecs.test.ComponentsTestData.TestingS;
+import com.overminddl1.over_ecs.bench.ComponentsTestData.TestingI;
+import com.overminddl1.over_ecs.bench.ComponentsTestData.TestingS;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -31,6 +31,7 @@ public class WorldBench {
 
 	@Param({"10000"})
 	public int par_batch_size;
+
 	private World world;
 	private QueryState query_reset;
 	private QueryState query_bench_ro;
