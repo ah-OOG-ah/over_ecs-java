@@ -1,5 +1,9 @@
 package com.overminddl1.over_ecs.entities;
 
+/**
+ * I'm fairly certain this is the entity's position in memory.
+ * Not in the world. Stores archetype (table of components) and index (no duh sherlock)
+ */
 public class EntityLocation {
 	public static final int INVALID_ARCHETYPE_ID = 0xFFFFFFFF;
 	public static final int INVALID_INDEX = 0xFFFFFFFF;

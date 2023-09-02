@@ -4,7 +4,12 @@ import com.overminddl1.over_ecs.storages.SparseArray;
 
 import java.util.ArrayList;
 
+/**
+ * Really not sure what this is
+ */
 public class Edges {
+
+	// Genuinely no idea why these are here
 	public SparseArray<AddBundle> add_bundle;
 	public SparseArray<Integer> remove_bundle;
 	public SparseArray<Integer> remove_bundle_intersection;

@@ -1,10 +1,11 @@
 plugins {
     java
     id("me.champeau.jmh") version "0.6.6"
+    `maven-publish`
 }
 
-group = "com.overminddl1.over_ecs"
-version = "1.0-SNAPSHOT"
+group = "com.overminddl1"
+version = "1.0"
 
 repositories {
     mavenCentral()
@@ -28,4 +29,29 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
     minHeapSize = "512m"
     maxHeapSize = "4096M"
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+artifacts {
+
+    archives(tasks.named("sourcesJar"))
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("over_ecs") {
+            from(components["java"])
+
+            groupId = project.group.toString()
+            artifactId = project.name
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
 }

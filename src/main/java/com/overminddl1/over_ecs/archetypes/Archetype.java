@@ -8,9 +8,15 @@ import com.overminddl1.over_ecs.storages.StorageUtils;
 
 import java.util.ArrayList;
 
+/**
+ * Defines an archetype. What's that? It's a table of components defining an entity type. Entities with the same
+ * components have the same archetypes.
+ */
 public class Archetype {
 	private int id;
+	// Fairly certain this is all entities which have this archetype
 	private ArrayList<Long> entities;
+	// the heck
 	private Edges edges;
 	private TableInfo table_info;
 	private int[] table_components;
@@ -19,8 +25,11 @@ public class Archetype {
 	private SparseSet<ArchetypeComponentInfo> components;
 
 	public Archetype(int id, int table_id, int[] table_components, int[] sparse_set_components, int[] table_archetype_components, int[] sparse_set_archetype_components) {
+
+		// Not really sure why these are 4 and not 2 tables
 		assert (table_components.length == table_archetype_components.length);
 		assert (sparse_set_components.length == sparse_set_archetype_components.length);
+
 		this.id = id;
 		this.entities = new ArrayList<Long>();
 		this.edges = new Edges();
@@ -98,6 +107,7 @@ public class Archetype {
 		this.table_info.entity_rows.ensureCapacity(this.table_info.entity_rows.size() + additional);
 	}
 
+	//
 	public ArchetypeSwapRemoveResult swap_remove(int index) {
 		boolean is_last = index == this.entities.size() - 1;
 		StorageUtils.swap_remove(this.entities, index);

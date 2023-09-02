@@ -15,32 +15,51 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class Entity {
+
+	// Map of component IDs
 	private static HashMap<Class, Integer> single_id_map = new HashMap<Class, Integer>();
+
+	// The factory for the entity
 	private static EntitySingleBundleFactory single_bf = new EntitySingleBundleFactory();
+	// THe bundle
 	private static EntitySingleBundle single_b = new EntitySingleBundle();
+	// The world it belongs to
 	private World world;
+	// The ID, methinks
 	private long entity;
+	// Location in memory
 	private EntityLocation location;
 
+	// How else are ya gonna define it?
 	public Entity(World world, long entity, EntityLocation location) {
 		this.world = world;
 		this.entity = entity;
 		this.location = location;
 	}
 
+	// Convert the long to an int... because. As to why it truncates:
+	// "Explicit in case I changed how much I used.
+	// Splitting in half isn't normal but I was using a long anyway so I was just being lazy,
+	// I left it there to make it easy to change
+	// Normally I use 32-bit entity IDs with 24 bits for the actual ID and 8 for the generation
+	// But Java sucks and I didn't want to deal with some things"
+
+	// Returns a long with the generation and ID packed into it
 	public static long init(int generation, int id) {
 		return ((long) generation << 32) | id;
 	}
-
+	// Unpacks id from a long
 	public static int id(long entity) {
 		return (int) (entity & 0xFFFFFFFF);
 	}
-
+	// Unpacks generation from a long
 	public static int generation(long entity) {
 		return (int) ((entity >> 32) & 0xFFFFFFFF);
 	}
 
+	// Not sure what this is. Must be important tho
 	private static void move_entity_from_remove(Entity entity, EntityLocation location, int archetype_id, EntityLocation old_location, Entities entities, Archetypes archetypes, Storages storages, Integer new_archetype_id, boolean drop) {
+
 		Archetype old_archetype = archetypes.get(archetype_id);
 		ArchetypeSwapRemoveResult remove_result = old_archetype.swap_remove(old_location.index);
 		if (remove_result.swapped_entity != null) {
@@ -88,9 +107,12 @@ public final class Entity {
 		throw new RuntimeException("Unreachable");
 	}
 
+
 	private static Integer remove_bundle_from_archetype(Archetypes archetypes, Storages storages, Components components, int archetype_id, BundleInfo bundle_info, boolean intersection) {
+
 		Archetype current_archetype = archetypes.get(archetype_id);
 		Integer remove_bundle_result;
+
 		if (intersection) {
 			remove_bundle_result = current_archetype.getEdges().get_remove_bundle_intersection(bundle_info.getId());
 		} else {
@@ -327,6 +349,13 @@ public final class Entity {
 
 	// Helper private inner classess
 
+	/**
+	 * The implementation of a BundleFactory for entities. In sum, it takes a component and:
+	 * returns the id from the map
+	 * puts the component in the map
+	 * returns the ID of the components passed
+	 * returns the bundle when given a component supplier
+ 	 */
 	private static final class EntitySingleBundleFactory implements BundleFactory {
 		Class<? extends Component> component_class;
 
@@ -353,6 +382,9 @@ public final class Entity {
 		}
 	}
 
+	/**
+	 * An entity implementing Bundle
+	 */
 	private static final class EntitySingleBundle implements Bundle {
 		Component component;
 

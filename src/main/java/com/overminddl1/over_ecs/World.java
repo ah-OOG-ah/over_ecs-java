@@ -19,6 +19,11 @@ import com.overminddl1.over_ecs.world.MainThreadValidator;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
+/**
+ * The main World, containing a bunch of things I don't know much about.
+ * Hey, I didn't say the documentation would be useful. Pretty sure the license explicitly says it doesn't have to be.
+ */
 public class World {
 	private static AtomicInteger NEXT_ID = new AtomicInteger(0);
 
