@@ -1,5 +1,8 @@
 package com.overminddl1.over_ecs.archetypes;
 
+/**
+ * Stores an entity ID and a table row
+ */
 public class ArchetypeSwapRemoveResult {
 	public final Long swapped_entity;
 	public final int table_row;

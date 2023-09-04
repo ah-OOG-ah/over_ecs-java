@@ -276,6 +276,7 @@ public class Entities {
 		});
 	}
 
+	// Return the metadata for a given entity. Ignores generation
 	public EntityMeta getMeta(long entity) {
 		return this.meta.get(Entity.id(entity));
 	}

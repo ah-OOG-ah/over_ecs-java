@@ -57,21 +57,29 @@ public final class Entity {
 		return (int) ((entity >> 32) & 0xFFFFFFFF);
 	}
 
-	// Not sure what this is. Must be important tho
+	// Move an entity to a new archetype
 	private static void move_entity_from_remove(Entity entity, EntityLocation location, int archetype_id, EntityLocation old_location, Entities entities, Archetypes archetypes, Storages storages, Integer new_archetype_id, boolean drop) {
 
+		// Remove the entity from the old archetype, and if it was a swap, set the memory location of the old entity
 		Archetype old_archetype = archetypes.get(archetype_id);
 		ArchetypeSwapRemoveResult remove_result = old_archetype.swap_remove(old_location.index);
 		if (remove_result.swapped_entity != null) {
 			entities.getMeta(remove_result.swapped_entity).location = old_location;
 		}
+
+
 		int old_table_row = remove_result.table_row;
 		int old_table_id = old_archetype.getTableId();
 		Archetype new_archetype = archetypes.get(new_archetype_id);
 		EntityLocation new_location;
+
+		// If the new and old table IDs are the same, reuse the table row
 		if (old_table_id == new_archetype.getTableId()) {
+
 			new_location = new_archetype.allocate(entity.entity, old_table_row);
 		} else {
+
+			// Probably get a new table or smth idc
 			Table old_table = storages.tables.get(old_table_id);
 			Table new_table = storages.tables.get(new_archetype.getTableId());
 			TableMoveResult move_result = new TableMoveResult();
@@ -87,27 +95,36 @@ public final class Entity {
 				archetypes.get(swapped_location.archetype_id).setEntityTableRow(swapped_location.index, old_table_row);
 			}
 		}
+
+		// Reset meta and location, now that we have it
 		entity.location = new_location;
 		entities.getMeta(entity.id()).location = new_location;
 	}
 
+	// Fairly certain this is how you delete a component from an entity
 	private static Component take_component(Components components, Storages storages, Archetype archetype, SparseSet<ArrayList<Long>> removed_components_set, int component_id, long entity, EntityLocation location) {
+
 		ComponentInfo component_info = components.getInfo(component_id);
 		ArrayList<Long> removed_components = removed_components_set.get_or_insert_with(component_id, ArrayList::new);
 		removed_components.add(entity);
-		switch(component_info.getStorageType()) {
-			case Table:
+
+		switch (component_info.getStorageType()) {
+			case Table -> {
 				Table table = storages.tables.get(archetype.getTableId());
 				Column column = table.get_column(component_id);
 				int table_row = archetype.getEntityTableRow(location.index);
 				return (Component) column.get_data(table_row);
-			case SparseSet:
+			}
+			case SparseSet -> {
 				return (Component) storages.sparse_sets.get(component_id).remove(entity);
+			}
 		}
+
+		// If you see this you are having a very bad day
 		throw new RuntimeException("Unreachable");
 	}
 
-
+    // I sincerely hope this is exactly what the title sounds like, because I ain't checkin
 	private static Integer remove_bundle_from_archetype(Archetypes archetypes, Storages storages, Components components, int archetype_id, BundleInfo bundle_info, boolean intersection) {
 
 		Archetype current_archetype = archetypes.get(archetype_id);
@@ -126,13 +143,9 @@ public final class Entity {
 			for (int i = 0; i < components_ids.length; i++) {
 				int component_id = components_ids[i];
 				if (current_archetype.contains(component_id)) {
-					switch(components.getInfo(component_id).getStorageType()) {
-						case Table:
-							removed_table_components.add(component_id);
-							break;
-						case SparseSet:
-							removed_sparse_set_components.add(component_id);
-							break;
+					switch (components.getInfo(component_id).getStorageType()) {
+						case Table -> removed_table_components.add(component_id);
+						case SparseSet -> removed_sparse_set_components.add(component_id);
 					}
 				} else if (!intersection) {
 					current_archetype.getEdges().insert_remove_bundle(bundle_info.getId(), null);
@@ -160,7 +173,16 @@ public final class Entity {
 		return result;
 	}
 
+	/**
+	 * Remove items from a list, using a list
+	 * @param list Items to be checked
+	 * @param removed A sorted list of items to NOT remove
+	 * @return Original list but with only items found in removed
+	 */
 	private static int[] sorted_remove(int[] list, List<Integer> removed) {
+		// Turn list into a stream
+		// For each element, If it is in removed
+		// turn it back into an array and return
 		return Arrays.stream(list).filter((i) -> {
 			return Collections.binarySearch(removed, i) >= 0;
 		}).toArray();
@@ -197,7 +219,9 @@ public final class Entity {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Component> T get(Class<T> component_class) {
+
 		Integer component_id = this.world.getComponents().getId(component_class);
+
 		if (component_id != null) {
 			return (T) this.get_component(component_id);
 		} else {
@@ -207,7 +231,9 @@ public final class Entity {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Component> T set(Class<T> component_class) {
+
 		Integer component_id = this.world.getComponents().getId(component_class);
+
 		if (component_id != null) {
 			return (T) this.set_component(component_id);
 		} else {
@@ -215,11 +241,15 @@ public final class Entity {
 		}
 	}
 
+	// Given ID, returns a component from the datat table, or null if not found
 	public Component get_component(int component_id) {
+
 		Archetype archetype = this.world.getArchetypes().get(this.location.archetype_id);
 		ComponentInfo component_info = this.world.getComponents().getInfo(component_id);
-		switch(this.world.getComponents().getInfo(component_id).getStorageType()) {
-			case Table:
+
+		switch (this.world.getComponents().getInfo(component_id).getStorageType()) {
+			case Table -> {
+
 				Table table = this.world.getStorages().tables.get(archetype.getTableId());
 				Column column = table.get_column(component_id);
 				if (column == null) {
@@ -227,20 +257,29 @@ public final class Entity {
 				}
 				int table_row = archetype.getEntityTableRow(this.location.index);
 				return column.data.get(table_row);
-			case SparseSet:
+			}
+			case SparseSet -> {
+
 				ComponentSparseSet sparse_set = this.world.getStorages().sparse_sets.get(component_id);
 				if (sparse_set == null) {
 					return null;
 				}
 				return sparse_set.get(entity);
+			}
 		}
+
+		// Sure it is
 		throw new RuntimeException("Unreachable");
 	}
 
+	// Not sure what this does
 	public Component set_component(int component_id) {
+
 		Archetype archetype = this.world.getArchetypes().get(this.location.archetype_id);
-		switch(this.world.getComponents().getInfo(component_id).getStorageType()) {
-			case Table:
+
+		switch (this.world.getComponents().getInfo(component_id).getStorageType()) {
+			case Table -> {
+
 				Table table = this.world.getStorages().tables.get(archetype.getTableId());
 				Column column = table.get_column(component_id);
 				if (column == null) {
@@ -249,13 +288,15 @@ public final class Entity {
 				int table_row = archetype.getEntityTableRow(this.location.index);
 				column.get_ticks(table_row).set_changed(this.world.getChangeTick());
 				return column.data.get(table_row);
-			case SparseSet:
+			}
+			case SparseSet -> {
 				ComponentSparseSet sparse_set = this.world.getStorages().sparse_sets.get(component_id);
 				if (sparse_set == null) {
 					return null;
 				}
 				sparse_set.get_ticks(entity).set_changed(this.world.getChangeTick());
 				return sparse_set.get(entity);
+			}
 		}
 		throw new RuntimeException("Unreachable");
 	}

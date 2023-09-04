@@ -107,7 +107,8 @@ public class Archetype {
 		this.table_info.entity_rows.ensureCapacity(this.table_info.entity_rows.size() + additional);
 	}
 
-	//
+	// SRemoves the entity from the archetype, returning the ID of the entity that took its place and...
+	// the row it was in? Really not sure bout the other part
 	public ArchetypeSwapRemoveResult swap_remove(int index) {
 		boolean is_last = index == this.entities.size() - 1;
 		StorageUtils.swap_remove(this.entities, index);
