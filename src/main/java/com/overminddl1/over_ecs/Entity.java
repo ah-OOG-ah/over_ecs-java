@@ -195,6 +195,11 @@ public final class Entity {
 		return Entity.generation(this.entity);
 	}
 
+	// This wasn't included by Overmind and I don't know why
+	public long fullId() {
+		return entity;
+	}
+
 	public EntityLocation location() {
 		return this.location;
 	}
