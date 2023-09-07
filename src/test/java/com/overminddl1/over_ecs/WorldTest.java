@@ -37,6 +37,20 @@ class WorldTest {
 	}
 
 	@Test
+	void query_get() {
+		World world = new World();
+		world.init_component(TestingS.class);
+		world.init_component(TestingI.class);
+		BundleN bundle_si = new BundleN(new TestingS("String"), new TestingI(-1));
+		Entity entity = world.spawn();
+		entity.insert_bundle(bundle_si.set_unchecked(0, new TestingS("String:" + entity.id())).set_unchecked(1, new TestingI(entity.id())));
+		QueryState query_IS = world.query(WorldQuery.builder().read_component(TestingI.class).read_component(TestingS.class));
+		QueryState query_EIS = world.query(WorldQuery.builder().read_entities().read_component(TestingI.class).read_component(TestingS.class));
+		QueryState query_E = world.query(WorldQuery.builder().read_entities());
+
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	void spawn_and_fast_access() {
 		World world = new World();

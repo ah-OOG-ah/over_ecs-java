@@ -15,11 +15,11 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class Entity {
-	private static HashMap<Class, Integer> single_id_map = new HashMap<Class, Integer>();
-	private static EntitySingleBundleFactory single_bf = new EntitySingleBundleFactory();
-	private static EntitySingleBundle single_b = new EntitySingleBundle();
-	private World world;
-	private long entity;
+	private static final HashMap<Class<? extends Component>, Integer> single_id_map = new HashMap<>();
+	private static final EntitySingleBundleFactory single_bf = new EntitySingleBundleFactory();
+	private static final EntitySingleBundle single_b = new EntitySingleBundle();
+	private final World world;
+	private final long entity;
 	private EntityLocation location;
 
 	public Entity(World world, long entity, EntityLocation location) {
@@ -33,11 +33,11 @@ public final class Entity {
 	}
 
 	public static int id(long entity) {
-		return (int) (entity & 0xFFFFFFFF);
+		return (int) entity; //(entity & 0xFFFFFFFF); // TODO(EntityShape): Change this if we change from `long`
 	}
 
 	public static int generation(long entity) {
-		return (int) ((entity >> 32) & 0xFFFFFFFF);
+		return (int) ((entity >> 32)); //((entity >> 32) & 0xFFFFFFFF); // TODO(EntityShape): Change this if we change from `long`
 	}
 
 	private static void move_entity_from_remove(Entity entity, EntityLocation location, int archetype_id, EntityLocation old_location, Entities entities, Archetypes archetypes, Storages storages, Integer new_archetype_id, boolean drop) {
@@ -64,7 +64,6 @@ public final class Entity {
 			new_location = new_archetype.allocate(entity.entity, move_result.new_row);
 			if (move_result.swapped_entity != null) {
 				EntityLocation swapped_location = entities.get(move_result.swapped_entity);
-				;
 				archetypes.get(swapped_location.archetype_id).setEntityTableRow(swapped_location.index, old_table_row);
 			}
 		}
@@ -150,6 +149,10 @@ public final class Entity {
 
 	public int generation() {
 		return Entity.generation(this.entity);
+	}
+
+	public long entity() {
+		return this.entity;
 	}
 
 	public EntityLocation location() {
@@ -273,7 +276,7 @@ public final class Entity {
 				return Entity.take_component(components, storages, old_archetype, removed_components, component_id, entity, old_location);
 			}
 		});
-		this.move_entity_from_remove(this, this.location, old_location.archetype_id, old_location, this.world.getEntities(), this.world.getArchetypes(), this.world.getStorages(), new_archetype_id, false);
+		Entity.move_entity_from_remove(this, this.location, old_location.archetype_id, old_location, this.world.getEntities(), this.world.getArchetypes(), this.world.getStorages(), new_archetype_id, false);
 		return result;
 	}
 
