@@ -105,7 +105,7 @@ public class QueryState implements Iterable<Object> {
 		if (location == null) {
 			return null;
 		}
-		if (this.matched_archetypes.get(location.archetype_id)) {
+		if (!this.matched_archetypes.get(location.archetype_id)) {
 			return null;
 		}
 		Archetype archetype = world.getArchetypes().get(location.archetype_id);
