@@ -54,22 +54,22 @@ public class WorldQueryBuilder implements WorldQuery {
 
 		@Override
 		public void update_component_access(FilteredAccess access) {
-			for (int i = 0; i < this.states.length; i++) {
-				this.states[i].update_component_access(access);
+			for (FetchState state : this.states) {
+				state.update_component_access(access);
 			}
 		}
 
 		@Override
 		public void update_archetype_component_access(Archetype archetype, Access access) {
-			for (int i = 0; i < this.states.length; i++) {
-				this.states[i].update_archetype_component_access(archetype, access);
+			for (FetchState state : this.states) {
+				state.update_archetype_component_access(archetype, access);
 			}
 		}
 
 		@Override
 		public boolean matches_archetype(Archetype archetype) {
-			for (int i = 0; i < this.states.length; i++) {
-				if (!this.states[i].matches_archetype(archetype)) {
+			for (FetchState state : this.states) {
+				if (!state.matches_archetype(archetype)) {
 					return false;
 				}
 			}
@@ -78,8 +78,8 @@ public class WorldQueryBuilder implements WorldQuery {
 
 		@Override
 		public boolean matches_table(Table table) {
-			for (int i = 0; i < this.states.length; i++) {
-				if (!this.states[i].matches_table(table)) {
+			for (FetchState state : this.states) {
+				if (!state.matches_table(table)) {
 					return false;
 				}
 			}
@@ -102,8 +102,8 @@ public class WorldQueryBuilder implements WorldQuery {
 
 		@Override
 		public boolean is_dense() {
-			for (int i = 0; i < this.fetches.length; i++) {
-				if (!this.fetches[i].is_dense()) {
+			for (Fetch fetch : this.fetches) {
+				if (!fetch.is_dense()) {
 					return false;
 				}
 			}

@@ -1,6 +1,7 @@
 package com.overminddl1.over_ecs.bundles;
 
 import com.overminddl1.over_ecs.*;
+import com.overminddl1.over_ecs.Component;
 import com.overminddl1.over_ecs.archetypes.AddBundle;
 import com.overminddl1.over_ecs.archetypes.Archetype;
 import com.overminddl1.over_ecs.archetypes.Edges;

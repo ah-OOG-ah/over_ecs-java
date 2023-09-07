@@ -7,6 +7,9 @@ import com.overminddl1.over_ecs.Storages;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * You wanna make a bundle? This is how you make a bundle.
+ */
 public class BundleN implements Bundle {
 	private BundleNFactory factory;
 	private Component[] components;

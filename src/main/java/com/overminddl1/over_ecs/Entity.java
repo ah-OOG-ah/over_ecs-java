@@ -140,8 +140,7 @@ public final class Entity {
 			ArrayList<Integer> removed_table_components = new ArrayList<Integer>();
 			ArrayList<Integer> removed_sparse_set_components = new ArrayList<Integer>();
 			int[] components_ids = bundle_info.getComponentIds();
-			for (int i = 0; i < components_ids.length; i++) {
-				int component_id = components_ids[i];
+			for (int component_id : components_ids) {
 				if (current_archetype.contains(component_id)) {
 					switch (components.getInfo(component_id).getStorageType()) {
 						case Table -> removed_table_components.add(component_id);
@@ -241,7 +240,7 @@ public final class Entity {
 		}
 	}
 
-	// Given ID, returns a component from the datat table, or null if not found
+	// Given ID, returns a component from the data table, or null if not found
 	public Component get_component(int component_id) {
 
 		Archetype archetype = this.world.getArchetypes().get(this.location.archetype_id);
@@ -388,7 +387,7 @@ public final class Entity {
 		this.location = this.world.getEntities().get(this.entity);
 	}
 
-	// Helper private inner classess
+	// Helper private inner classes
 
 	/**
 	 * The implementation of a BundleFactory for entities. In sum, it takes a component and:

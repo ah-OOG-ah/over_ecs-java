@@ -36,6 +36,10 @@ java {
     withJavadocJar()
 }
 
+sourceSets {
+    create("api")
+}
+
 artifacts {
 
     archives(tasks.named("sourcesJar"))

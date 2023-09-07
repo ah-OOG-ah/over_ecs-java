@@ -42,20 +42,34 @@ public class WorldBench {
 	@Setup(Level.Iteration)
 	@SuppressWarnings("unchecked")
 	public void setupIteration() throws Exception {
+
+		// Init world
 		if (world == null) {
+
 			anArray = IntStream.range(0, entity_count / entity_divisor).mapToObj(TestingI::new).toList();
 			task_pool = ForkJoinPool.commonPool();
 			System.out.println("Task Pool Threads: " + ForkJoinPool.getCommonPoolParallelism());
+
+			// Register components
 			world = new World();
 			world.init_component(TestingS.class);
 			world.init_component(TestingI.class);
+
+			// Make queries
 			query_reset = world.query(WorldQuery.builder().read_entities().write_component(TestingI.class));
 			query_bench_ro = world.query(WorldQuery.builder().read_component(TestingI.class));
 			query_bench_rw = world.query(WorldQuery.builder().write_component(TestingI.class));
+
+			// Make bundles
 			BundleN bundle_s = new BundleN(new TestingS("String"));
 			BundleN bundle_si = new BundleN(new TestingS("String"), new TestingI(-1));
+
+			// Spawn in count entities
 			for (int i = 0; i < entity_count; i++) {
+
 				Entity entity = world.spawn();
+
+				// Every divisor entities, add an si bundle. Add an s bundle to the rest
 				if (i % entity_divisor == 0) {
 					entity.insert_bundle(bundle_si.set_unchecked(0, new TestingS("String:" + i)).set_unchecked(1, new TestingI(i)));
 				} else {
@@ -77,8 +91,8 @@ public class WorldBench {
 
 	@Benchmark
 	public void list_for(Blackhole blackhole) throws Exception {
-		for (int i = 0; i < anArray.size(); i++) {
-			blackhole.consume(anArray.get(i).value);
+		for (TestingI testingI : anArray) {
+			blackhole.consume(testingI.value);
 		}
 	}
 

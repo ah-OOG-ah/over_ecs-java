@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * The main World, containing a bunch of things I don't know much about.
- * Hey, I didn't say the documentation would be useful. Pretty sure the license explicitly says it doesn't have to be.
+ * This is meant to be instantiated by an API user, and the entities within interacted with via R or RW WorldQueries.
+ * Specifically: get the Entity class somehow, and run insert(? implements Component) or insert_bundle
  */
 public class World {
 	private static AtomicInteger NEXT_ID = new AtomicInteger(0);
@@ -104,8 +104,8 @@ public class World {
 		this.storages.tables.check_change_ticks(change_tick);
 		this.storages.sparse_sets.check_change_ticks(change_tick);
 		ArrayList<Column> values = this.archetypes.resource().getUniqueComponents().getValues();
-		for (int i = 0; i < values.size(); i++) {
-			values.get(i).check_change_ticks(change_tick);
+		for (Column value : values) {
+			value.check_change_ticks(change_tick);
 		}
 	}
 
@@ -118,7 +118,7 @@ public class World {
 
 	@Override
 	public String toString() {
-		return new StringBuilder().append("World{").append("\n\tid=").append(this.id).append(",\n\tentity_count=").append(this.entities.size()).append(",\n\tarchetype_count=").append(this.archetypes.size()).append(",\n\tcomponent_count=").append(this.components.size()).append(",\n\tresource_count=").append(this.archetypes.resource().getUniqueComponents().size()).append("\n}").toString();
+		return "World{" + "\n\tid=" + this.id + ",\n\tentity_count=" + this.entities.size() + ",\n\tarchetype_count=" + this.archetypes.size() + ",\n\tcomponent_count=" + this.components.size() + ",\n\tresource_count=" + this.archetypes.resource().getUniqueComponents().size() + "\n}";
 	}
 
 	public int init_component(Class<? extends Component> component_class) {
@@ -130,7 +130,7 @@ public class World {
 		AllocAtWithoutReplacement result = this.entities.alloc_at_without_replacement(entity);
 		if (result.location != null) {
 			return new Entity(this, entity, result.location);
-		} else if (result.wrong_generation_error == false) {
+		} else if (!result.wrong_generation_error) {
 			return this.spawn_at_internal(entity);
 		} else {
 			return null;

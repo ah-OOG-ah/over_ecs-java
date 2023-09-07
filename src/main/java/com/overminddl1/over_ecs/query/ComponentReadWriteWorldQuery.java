@@ -85,15 +85,15 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 				throw new RuntimeException("Component class " + component_class.getName() + " is not registered with the world.");
 			}
 			this.storage_type = info.getStorageType();
-			switch(this.storage_type) {
-				case Table:
+			switch (this.storage_type) {
+				case Table -> {
 					this.is_dense = true;
 					this.sparse_set = null;
-					break;
-				case SparseSet:
+				}
+				case SparseSet -> {
 					this.is_dense = false;
 					this.sparse_set = world.getStorages().sparse_sets.get(((ImplFetchState) fetch_state).component_id);
-					break;
+				}
 			}
 			this.table_components = null;
 			this.table_ticks = null;
@@ -112,15 +112,13 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 		@Override
 		public void set_archetype(FetchState fetch_state, Archetype archetype, Tables tables) {
 			switch (this.storage_type) {
-				case Table:
+				case Table -> {
 					this.entity_table_rows = archetype.getEntityTableRows();
 					Column column = tables.get(archetype.getTableId()).get_column(((ImplFetchState) fetch_state).component_id);
 					this.table_components = column.data;
 					this.table_ticks = column.ticks;
-					break;
-				case SparseSet:
-					this.entities = archetype.getEntities();
-					break;
+				}
+				case SparseSet -> this.entities = archetype.getEntities();
 			}
 		}
 
@@ -134,13 +132,13 @@ public class ComponentReadWriteWorldQuery implements WorldQuery {
 		@Override
 		public Object archetype_fetch(int archetype_index) {
 			switch (this.storage_type) {
-				case Table: {
+				case Table -> {
 					int table_row = this.entity_table_rows.get(archetype_index);
 					Component value = this.table_components.get(table_row);
 					ComponentTicks ticks = this.table_ticks.get(table_row);
 					return this.mutable.unsafe_update_internal(value, ticks);
 				}
-				case SparseSet: {
+				case SparseSet -> {
 					long entity = this.entities.get(archetype_index);
 					Component value = this.sparse_set.get(entity);
 					ComponentTicks ticks = this.sparse_set.get_ticks(entity);

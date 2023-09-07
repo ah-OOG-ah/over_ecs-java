@@ -159,6 +159,10 @@ public class QueryState implements Iterable<Object> {
 		return new QueryCombinationIter(world, this, last_change_tick, change_tick);
 	}
 
+	/**
+	 * Iterate over the members of the query. Said objects being Object[]s containing the requested components and/or
+	 * entities. Despite the generic appearance, should be called at type Object[] because reasons.
+	 */
 	public <T> void for_each(Consumer<T> func) {
 		this.for_each(this.world, func);
 	}
@@ -178,8 +182,8 @@ public class QueryState implements Iterable<Object> {
 		FilterFetch filter = filter_factory.init_fetch(world, this.filter_state, last_change_tick, change_tick);
 		if (fetch.is_dense() && filter.is_dense()) {
 			Tables tables = world.getStorages().tables;
-			for (int table_idx = 0; table_idx < this.matched_table_ids.size(); table_idx++) {
-				Table table = tables.get(this.matched_table_ids.get(table_idx));
+			for (Integer matchedTableId : this.matched_table_ids) {
+				Table table = tables.get(matchedTableId);
 				fetch.set_table(this.fetch_state, table);
 				filter.set_table(this.filter_state, table);
 				for (int table_index = 0; table_index < table.size(); table_index++) {
@@ -192,8 +196,8 @@ public class QueryState implements Iterable<Object> {
 		} else {
 			Archetypes archetypes = world.getArchetypes();
 			Tables tables = world.getStorages().tables;
-			for (int i = 0; i < this.matched_archetype_ids.size(); i++) {
-				Archetype archetype = archetypes.get(this.matched_archetype_ids.get(i));
+			for (Integer matchedArchetypeId : this.matched_archetype_ids) {
+				Archetype archetype = archetypes.get(matchedArchetypeId);
 				fetch.set_archetype(this.fetch_state, archetype, tables);
 				filter.set_archetype(this.filter_state, archetype, tables);
 				for (int archetype_index = 0; archetype_index < archetype.size(); archetype_index++) {
