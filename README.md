@@ -35,7 +35,7 @@ You must first create the storage registry where everything is stored and proces
 World world = new World();
 ```
 
-Optionally (and suggested to avoid generation hitches during runtime later but they are minor enough to likely be ignored anyway) you can preallocate the metadata for the components you will be using.
+Register the component types you will be using.  These can be done at runtime later for dynamically allocated things, they just need to be registered before use for runtime performance reasons.
 
 ```java
 world.init_component(Health.class);
