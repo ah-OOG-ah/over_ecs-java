@@ -9,16 +9,6 @@ public class ComponentsTestData {
 		public TestingI(int value) {
 			this.value = value;
 		}
-
-		@Override
-		public Component componentClone() {
-			return new ComponentsTestData.TestingI(this.value);
-		}
-
-		@Override
-		public void componentReset() {
-			this.value = -1;
-		}
 	}
 
 	public static class TestingS implements Component {
@@ -26,16 +16,6 @@ public class ComponentsTestData {
 
 		public TestingS(String value) {
 			this.value = value;
-		}
-
-		@Override
-		public Component componentClone() {
-			return new ComponentsTestData.TestingS(this.value);
-		}
-
-		@Override
-		public void componentReset() {
-			this.value = "<undefined>";
 		}
 	}
 }

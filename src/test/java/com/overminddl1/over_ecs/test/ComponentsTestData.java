@@ -13,16 +13,6 @@ public class ComponentsTestData {
 		public TestingI() {
 			this(-1);
 		}
-
-		@Override
-		public Component componentClone() {
-			return new ComponentsTestData.TestingI(this.value);
-		}
-
-		@Override
-		public void componentReset() {
-			this.value = -1;
-		}
 	}
 
 	public static class TestingS implements Component {
@@ -33,16 +23,6 @@ public class ComponentsTestData {
 		}
 		public TestingS() {
 			this("<undefined>");
-		}
-
-		@Override
-		public Component componentClone() {
-			return new ComponentsTestData.TestingS(this.value);
-		}
-
-		@Override
-		public void componentReset() {
-			this.value = "<undefined>";
 		}
 	}
 
@@ -57,17 +37,6 @@ public class ComponentsTestData {
 		public TestingSplit() {
 			this("<undefined>", -1);
 		}
-
-		@Override
-		public Component componentClone() {
-			return new ComponentsTestData.TestingSplit(this.string, this.integer);
-		}
-
-		@Override
-		public void componentReset() {
-			this.string = "<undefined>";
-            this.integer = -1;
-		}
 	}
 
 	@ComponentRefinement(storageType = "sparseset")
@@ -79,16 +48,6 @@ public class ComponentsTestData {
 		}
 		public TestingFSparse() {
 			this(-0.0F);
-		}
-
-		@Override
-		public Component componentClone() {
-			return new ComponentsTestData.TestingFSparse(this.value);
-		}
-
-		@Override
-		public void componentReset() {
-			this.value = -0.0F;
 		}
 	}
 }

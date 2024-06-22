@@ -8,6 +8,10 @@
 !/.gitignore
 !/.gitattributes
 
+# Documentation files
+!/README.md
+!/LICENSE
+
 # Build files
 !/build.gradle
 !/build.gradle.kts
